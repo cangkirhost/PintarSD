@@ -57,7 +57,14 @@ jobs:
       - name: Build debug APK
         env:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-        run: gradle assembleDebug --no-daemon
+        run: |
+          set -o pipefail
+          if ! gradle assembleDebug --no-daemon 2>&1 | tee build.log; then
+            # Tampilkan inti error sebagai annotation (terlihat di halaman ringkasan run)
+            MSG=$(grep -E "error:|What went wrong|Could not|FAILED" -A 6 build.log | head -n 60 | sed -e 's/%/%25/g' -e 's/\r//g' | awk 'BEGIN{ORS="%0A"}{print}')
+            echo "::error title=Build gagal::${MSG}"
+            exit 1
+          fi
 
       - name: Cek tanda tangan APK
         run: |
