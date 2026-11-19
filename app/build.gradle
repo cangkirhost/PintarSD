@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Kunci tanda tangan tetap (dari GitHub Secrets, diisi oleh workflow build.yml).
+// Dengan kunci yang sama di setiap build, APK baru bisa dipasang MENIMPA versi lama
+// tanpa menghapus PIN, pengaturan, dan riwayat anak.
+def ksPath = System.getenv("SIGNING_KEYSTORE")
+def ksPass = System.getenv("SIGNING_PASSWORD")
+def hasFixedKey = ksPath && ksPass && file(ksPath).exists()
+
+// Nomor versi naik otomatis mengikuti nomor run GitHub Actions.
+def runNo = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInteger()
+
+android {
+    namespace 'net.cangkirhost.pintarsd'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "net.cangkirhost.pintarsd"
+        minSdk 24
+        targetSdk 34
+        versionCode runNo
+        versionName "0.2." + runNo
+    }
+
+    signingConfigs {
+        fixed {
+            if (hasFixedKey) {
+                storeFile file(ksPath)
+                storeType "pkcs12"
+                storePassword ksPass
+                keyAlias "pintarsd"
+                keyPassword ksPass
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            if (hasFixedKey) signingConfig signingConfigs.fixed
+        }
+        release {
+            minifyEnabled false
+            if (hasFixedKey) signingConfig signingConfigs.fixed
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

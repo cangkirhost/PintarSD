@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Pintar SD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: one narrow column on a sunny sky-to-sand playground; one screen per step, big colourful tap targets.
+   Deliberately single bright theme (kid-facing): every colour set explicitly so it reads the same on any host. */
+:root{
+  --paper:#fff9e8; --sky:#bfe8ff; --ink:#2b2350; --muted:#6a6191;
+  --card:#ffffff; --border:#ece6ff;
+  --math:#ff7a1a; --math-2:#ffb800; --math-soft:#fff0d6;
+  --eng:#00b3a4; --eng-2:#3b82f6; --eng-soft:#d9f7f3;
+  --c1:#ff5c8a; --c2:#ffb800; --c3:#22c55e; --c4:#3b82f6; --c5:#a855f7; --c6:#00b3a4;
+  --c1s:#ffe3ec; --c2s:#fff3cc; --c3s:#dcfce7; --c4s:#dbeafe; --c5s:#f3e8ff; --c6s:#d9f7f3;
+  --good:#16a34a; --good-soft:#dcfce7; --bad:#e11d48; --bad-soft:#ffe4e9; --star:#ffc107;
+  --f-display:"Fredoka","Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --r:22px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5;
+  background-image:
+    radial-gradient(circle at 12% 8%,#ffffffcc 0 40px,transparent 41px),
+    radial-gradient(circle at 20% 6%,#ffffffcc 0 28px,transparent 29px),
+    radial-gradient(circle at 85% 14%,#ffffffb3 0 34px,transparent 35px),
+    radial-gradient(#ffd46655 2px,transparent 2.5px),
+    linear-gradient(180deg,var(--sky) 0,#e6f6ff 260px,var(--paper) 520px);
+  background-size:auto,auto,auto,26px 26px,auto;
+  background-attachment:fixed;
+}
+.wrap{max-width:560px;margin:0 auto;padding-block:16px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  position:relative}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.15}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--eng);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1.7rem;letter-spacing:.2px;display:flex}
+.brand b{font-weight:700}
+.brand b:nth-child(1){color:var(--c1)}.brand b:nth-child(2){color:var(--math)}.brand b:nth-child(3){color:var(--c2)}.brand b:nth-child(4){color:var(--c3)}.brand b:nth-child(5){color:var(--c4)}.brand b:nth-child(6){color:var(--c5)}
+.brand span{margin-left:6px;background:var(--c5);color:#fff;border-radius:10px;padding:0 8px;font-size:1.2rem;align-self:center;transform:rotate(-6deg)}
+.stars{display:flex;align-items:center;gap:6px;font-family:var(--f-display);font-weight:700;background:var(--star);color:#5a3b00;border-radius:999px;padding:6px 16px;font-variant-numeric:tabular-nums;box-shadow:0 4px 0 #e0a000}
+.stars svg{width:22px;height:22px;fill:#fff}
+
+.hello{margin-bottom:18px}
+.hello h2{font-size:1.9rem}
+.hello p{margin:4px 0 0;color:var(--muted)}
+.field{display:grid;gap:8px;margin-bottom:18px}
+.lbl{font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+input[type=text]{font:inherit;font-size:1.1rem;padding:12px 14px;border-radius:14px;border:3px solid var(--border);background:var(--card);color:var(--ink);width:100%}
+input[type=text]:focus{border-color:var(--c5);outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{--cc:var(--c4);--cs:var(--c4s);min-width:52px;padding:10px 14px;border-radius:14px;border:3px solid var(--cc);background:var(--cs);color:var(--ink);font-family:var(--f-display);font-weight:600;font-size:1.15rem;transition:transform .12s}
+.chip:active{transform:scale(.94)}
+.chips .chip:nth-child(6n+1){--cc:var(--c1);--cs:var(--c1s)}.chips .chip:nth-child(6n+2){--cc:var(--math);--cs:var(--math-soft)}.chips .chip:nth-child(6n+3){--cc:var(--c2);--cs:var(--c2s)}
+.chips .chip:nth-child(6n+4){--cc:var(--c3);--cs:var(--c3s)}.chips .chip:nth-child(6n+5){--cc:var(--c4);--cs:var(--c4s)}.chips .chip:nth-child(6n+6){--cc:var(--c5);--cs:var(--c5s)}
+.chip.sm{font-size:.95rem;padding:8px 12px}
+.chip[aria-pressed=true]{background:var(--cc);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--cc) 70%,#000);transform:translateY(-2px)}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+
+.subjects{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+@media (max-width:420px){.subjects{grid-template-columns:1fr}}
+.subj{position:relative;overflow:hidden;text-align:left;border:none;border-radius:var(--r);padding:20px;display:grid;gap:6px;min-height:170px;align-content:start;color:#fff;transition:transform .15s}
+.subj::after{content:"";position:absolute;right:-30px;bottom:-30px;width:120px;height:120px;border-radius:50%;background:#ffffff2e}
+.subj:hover{transform:translateY(-3px) rotate(-.5deg)}
+.subj:active{transform:scale(.97)}
+.subj .glyph{font-family:var(--f-display);font-size:2.3rem;font-weight:700;line-height:1;text-shadow:0 3px 0 #0000001f}
+.subj h3{font-size:1.45rem}
+.subj p{margin:0;font-size:.95rem;font-weight:700;opacity:.95}
+.subj.math{background:linear-gradient(135deg,var(--math-2),var(--math) 60%,var(--c1));box-shadow:0 6px 0 #d4580a}
+.subj.eng{background:linear-gradient(135deg,var(--eng),var(--eng-2) 70%,var(--c5));box-shadow:0 6px 0 #1f5fc4}
+.best{font-size:.82rem;font-weight:800;margin-top:4px;background:#ffffff40;border-radius:999px;padding:2px 10px;justify-self:start}
+.best:empty{display:none}
+
+.back{background:none;border:none;color:var(--muted);font-weight:800;padding:6px 0;margin-bottom:8px;display:inline-flex;gap:6px;align-items:center}
+.section-title{font-size:1.6rem;margin-bottom:4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.group-lbl{margin:18px 0 8px}
+.list{display:grid;gap:10px}
+.opt-row{--cc:var(--c4);--cs:var(--c4s);display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px 14px;border-radius:18px;border:3px solid var(--cs);background:var(--card);box-shadow:0 4px 0 var(--cs);transition:transform .12s}
+.opt-row:hover{border-color:var(--cc)}
+.opt-row:active{transform:translateY(2px);box-shadow:0 2px 0 var(--cs)}
+.list .opt-row:nth-child(6n+1){--cc:var(--c1);--cs:var(--c1s)}.list .opt-row:nth-child(6n+2){--cc:var(--c4);--cs:var(--c4s)}.list .opt-row:nth-child(6n+3){--cc:var(--c3);--cs:var(--c3s)}
+.list .opt-row:nth-child(6n+4){--cc:var(--c5);--cs:var(--c5s)}.list .opt-row:nth-child(6n+5){--cc:var(--math);--cs:var(--math-soft)}.list .opt-row:nth-child(6n+6){--cc:var(--c6);--cs:var(--c6s)}
+.opt-row .ic{font-size:1.6rem;width:50px;height:50px;border-radius:16px;display:grid;place-items:center;flex:none;background:var(--cs)}
+.opt-row .ic.sym{font-family:var(--f-display);font-weight:700;font-size:1.35rem;background:var(--cc);color:#fff!important}
+.opt-row>span:nth-child(2){min-width:0}
+.opt-row b{display:block;font-family:var(--f-display);font-size:1.1rem;font-weight:600}
+.opt-row small{color:var(--muted)}
+.opt-row .mini{margin-left:auto;display:flex;gap:2px;flex:none}
+.mini svg{width:16px;height:16px;fill:var(--border)}
+.mini svg.on{fill:var(--star)}
+.tag{display:inline-block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--eng);border:1px solid var(--eng);border-radius:999px;padding:0 8px;margin-left:6px;vertical-align:2px}
+
+/* quiz */
+.qhead{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.bar{flex:1;height:16px;border-radius:99px;background:var(--card);border:3px solid var(--border);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3),var(--c4),var(--c5));background-size:400px 100%;border-radius:99px;transition:width .3s}
+.count{font-family:var(--f-display);font-weight:700;font-variant-numeric:tabular-nums;color:#fff;background:var(--accent,var(--math));border-radius:999px;padding:2px 10px;font-size:.95rem}
+.qcard{background:var(--card);border:4px solid var(--accent,var(--math));border-radius:26px;padding:24px 18px;text-align:center;margin-bottom:16px;box-shadow:0 6px 0 color-mix(in srgb,var(--accent,var(--math)) 35%,transparent)}
+.qtext{font-family:var(--f-display);font-weight:600;font-size:clamp(2rem,9vw,3rem);font-variant-numeric:tabular-nums;line-height:1.2;word-break:break-word}
+.qtext.small{font-size:clamp(1.15rem,5.2vw,1.55rem);line-height:1.35}
+.blank{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--accent,var(--eng));margin:0 .15em}
+.qhint{color:var(--muted);margin-top:6px;font-weight:700}
+.pic{font-size:5rem;line-height:1.1}
+.swatch{width:110px;height:110px;border-radius:24px;margin:0 auto;border:3px solid var(--border)}
+.clock{width:150px;height:150px;margin:0 auto 10px;display:block}
+.speak{margin-top:12px;border:2px solid var(--eng);color:var(--eng);background:transparent;border-radius:999px;padding:8px 18px;font-weight:800}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ans{--cc:var(--c4);--cs:var(--c4s);min-height:72px;border-radius:20px;border:3px solid var(--cc);background:var(--cs);color:var(--ink);font-family:var(--f-display);font-weight:600;font-size:1.5rem;padding:8px;font-variant-numeric:tabular-nums;box-shadow:0 5px 0 var(--cc);transition:transform .1s,box-shadow .1s;word-break:break-word}
+.answers .ans:nth-child(4n+1){--cc:var(--c1);--cs:var(--c1s)}.answers .ans:nth-child(4n+2){--cc:var(--c4);--cs:var(--c4s)}
+.answers .ans:nth-child(4n+3){--cc:var(--c2);--cs:var(--c2s)}.answers .ans:nth-child(4n+4){--cc:var(--c5);--cs:var(--c5s)}
+.ans.txt{font-size:1.12rem}
+.ans.emoji{font-size:2.5rem}
+.ans:active{transform:translateY(4px);box-shadow:0 1px 0 var(--cc)}
+.ans:disabled{cursor:default;opacity:.55}
+.ans.right,.ans.wrong{opacity:1}
+.answers .ans.right{--cc:var(--good);--cs:var(--good-soft);color:var(--good);animation:bounce .45s}
+.answers .ans.wrong{--cc:var(--bad);--cs:var(--bad-soft);color:var(--bad);animation:shake .4s}
+@keyframes bounce{40%{transform:scale(1.08)}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.feedback{min-height:56px;margin-top:16px;padding:12px 14px;border-radius:18px;font-family:var(--f-display);font-weight:600;font-size:1.1rem;text-align:center}
+.feedback.ok{background:var(--good);color:#fff}
+.feedback.no{background:var(--bad-soft);color:var(--bad);border:3px solid var(--bad)}
+.feedback:empty{background:none;border:none}
+.next{width:100%;margin-top:14px;padding:16px;border:none;border-radius:20px;background:linear-gradient(90deg,var(--c3),#10b981);color:#fff;font-family:var(--f-display);font-weight:700;font-size:1.25rem;box-shadow:0 5px 0 #0f8a4a}
+.next:active{transform:translateY(3px);box-shadow:0 2px 0 #0f8a4a}
+
+/* result */
+.result{text-align:center;padding-top:10px}
+.bigstars{display:flex;justify-content:center;gap:10px;margin:18px 0}
+.bigstars svg{width:64px;height:64px;fill:var(--border)}
+.bigstars svg.on{fill:var(--star);animation:pop .5s backwards}
+.bigstars svg.on:nth-child(2){animation-delay:.15s}.bigstars svg.on:nth-child(3){animation-delay:.3s}
+@keyframes pop{from{transform:scale(.3)}70%{transform:scale(1.15)}}
+.result h2{font-size:2.1rem;color:var(--c5)}
+.score{font-family:var(--f-display);font-size:3.4rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--c1)}
+.review{text-align:left;margin-top:18px;display:grid;gap:6px}
+.review div{background:var(--card);border:2px solid var(--c1s);border-radius:14px;padding:8px 12px;font-size:.95rem;font-weight:700}
+.review .x{color:var(--bad);font-weight:800}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.ghost{padding:14px;border-radius:20px;border:3px solid var(--c4);background:var(--c4s);color:var(--c4);font-family:var(--f-display);font-weight:700;font-size:1.05rem;box-shadow:0 5px 0 var(--c4)}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.hello h2{color:var(--ink)}
+.section-title{color:var(--c5)}
+.back{color:var(--c4)}
+.mission{background:var(--c5s);border:3px dashed var(--c5);border-radius:20px;padding:14px 16px;margin:0 0 18px;font-weight:800;color:var(--ink);display:grid;gap:10px}
+.mission b{font-family:var(--f-display);font-size:1.15rem;color:var(--c5)}
+.mission .dots{display:flex;gap:6px}
+.mission .dots i{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--c5)}
+.mission .dots i.on{background:var(--c3);border-color:var(--c3)}
+#missionMsg{margin-top:16px;text-align:center}
+.next.unlock{background:linear-gradient(90deg,var(--c1),var(--c5));box-shadow:0 5px 0 #8b2fc9;font-size:1.4rem;margin-bottom:6px}
+.mixcard{position:relative;overflow:hidden;width:100%;display:flex;align-items:center;gap:14px;text-align:left;border:none;border-radius:var(--r);padding:18px;margin:6px 0 14px;color:#fff;background:linear-gradient(120deg,var(--c1),var(--c5));box-shadow:0 6px 0 #8b2fc9;transition:transform .15s}
+.mixcard:active{transform:scale(.98)}
+.mixcard .mixicon{font-size:2.4rem;flex:none}
+.mixcard .mixtext{flex:1;min-width:0;display:grid;gap:2px}
+.mixcard h3{font-size:1.45rem}
+.mixcard p{margin:0;font-weight:700;font-size:.92rem;opacity:.95}
+.mixcard .go{flex:none;background:#fff;color:var(--c5);font-family:var(--f-display);font-weight:700;border-radius:999px;padding:8px 14px}
+@media (max-width:420px){.mixcard .go{display:none}}
+.qtag{display:inline-block;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--accent,var(--math));border-radius:999px;padding:2px 10px;margin-bottom:10px}
+.parent-link{margin-top:10px;background:none;border:2px solid var(--border);border-radius:999px;padding:6px 14px;color:var(--muted);font-weight:800;font-size:.8rem}
+.row2 .next{margin-top:0}
+.foot{margin-top:28px;font-size:.8rem;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand" aria-label="Pintar SD"><b>P</b><b>i</b><b>n</b><b>t</b><b>a</b><b>r</b><span>SD</span></div>
+    <div class="stars" title="Total bintang"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg><span id="totalStars">0</span></div>
+  </header>
+
+  <!-- HOME -->
+  <section id="vHome">
+    <div class="hello"><h2 id="helloText">Halo! Mau belajar apa hari ini?</h2><p>Kumpulkan bintang dari setiap latihan.</p></div>
+    <div class="mission" id="mission" hidden></div>
+    <div class="field"><label class="lbl" for="nameIn">Namamu</label><input id="nameIn" type="text" maxlength="20" placeholder="contoh: Dika" autocomplete="off"></div>
+    <div class="field"><span class="lbl">Kelas</span><div class="chips" id="gradeChips"></div><p class="note" id="faseNote"></p></div>
+    <div class="field"><span class="lbl">Pilih kurikulum</span><div class="chips" id="curChips"></div></div>
+    <button class="mixcard" id="goMix"><span class="mixicon" aria-hidden="true">🎯</span><span class="mixtext"><h3>Misi campuran</h3><p>10 soal acak Matematika &amp; Bahasa Inggris, beda setiap hari</p><span class="best" id="mixBest"></span></span><span class="go">Mulai →</span></button>
+    <div class="subjects">
+      <button class="subj math" id="goMath"><span class="glyph">+ −<br>× ÷</span><h3>Matematika</h3><p id="mathDesc"></p><span class="best" id="mathBest"></span></button>
+      <button class="subj eng" id="goEng"><span class="glyph">Aa</span><h3>Bahasa Inggris</h3><p id="engDesc"></p><span class="best" id="engBest"></span></button>
+    </div>
+  </section>
+
+  <!-- MATH MENU -->
+  <section id="vMath" hidden>
+    <button class="back" data-go="home">← Kembali</button>
+    <h2 class="section-title">Matematika</h2>
+    <p class="sub" id="mathSub"></p>
+    <div class="list" id="mathList"></div>
+  </section>
+
+  <!-- ENGLISH MENU -->
+  <section id="vEng" hidden>
+    <button class="back" data-go="home">← Kembali</button>
+    <h2 class="section-title">Bahasa Inggris</h2>
+    <p class="sub" id="engSub"></p>
+    <div class="field"><span class="lbl">Level</span><div class="chips" id="engLevel"></div></div>
+    <div class="field" id="modeField"><span class="lbl">Cara bermain tema bergambar</span><div class="chips" id="engMode"></div></div>
+    <div class="list" id="engList"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="vQuiz" hidden>
+    <div class="qhead"><button class="back" id="quitQuiz" style="margin:0" aria-label="Keluar">✕</button><div class="bar"><i id="barFill"></i></div><span class="count" id="qCount">1/10</span></div>
+    <div class="qcard"><div id="qBody"></div></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <button class="next" id="nextBtn" hidden>Lanjut →</button>
+  </section>
+
+  <!-- RESULT -->
+  <section id="vResult" hidden>
+    <div class="result">
+      <h2 id="resTitle">Hebat!</h2>
+      <div class="bigstars" id="resStars"></div>
+      <div class="score" id="resScore">0/10</div>
+      <p class="sub" id="resMsg"></p>
+      <p class="mission" id="missionMsg" hidden></p>
+      <button class="next unlock" id="unlockBtn" hidden>Buka tablet 🎉</button>
+      <div class="review" id="resReview"></div>
+      <div class="row2"><button class="ghost" data-go="back">Pilih latihan</button><button class="next" id="againBtn">Ulangi</button></div>
+    </div>
+  </section>
+
+  <p class="foot">Pilihan kurikulum: Merdeka (Fase A–C) atau Cambridge Primary (Stage 1–6)<br><button class="parent-link" id="parentLink" hidden>Menu orang tua</button></p>
+</div>
+
+<script>
+(()=>{
+const STAR='<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
+const KEY='pintar-sd-v1';
+let S={name:'',grade:1,cur:'merdeka',best:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s) S=Object.assign(S,s);}catch(e){}
+/* Mode aplikasi Android (layar kunci): pengaturan datang dari orang tua */
+const NATIVE=window.Android||null;
+let CFG=null;
+const loadCfg=()=>{if(!NATIVE)return;try{CFG=JSON.parse(NATIVE.getConfig());S.grade=CFG.grade}catch(e){}};
+loadCfg();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const fmt=n=>(n<0?'−':'')+Math.abs(n).toLocaleString('id-ID');
+const rp=n=>'Rp'+n.toLocaleString('id-ID');
+const fase=g=>g<=2?'A':g<=4?'B':'C';
+const level=g=>g<=2?1:g<=4?2:3;
+
+/* ---------- sound ---------- */
+let AC=null;
+function beep(ok){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
+  (ok?[660,880]:[300,220]).forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ok?'triangle':'sine';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t+i*.12);g.gain.exponentialRampToValueAtTime(.18,t+i*.12+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.12+.2);
+  o.connect(g).connect(AC.destination);o.start(t+i*.12);o.stop(t+i*.12+.22)})}catch(e){}}
+const canSpeak=!!NATIVE||'speechSynthesis' in window;
+function say(w){if(!canSpeak||!w)return;if(NATIVE){try{NATIVE.speak(w)}catch(e){}return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- clock ---------- */
+function clockSVG(h,m){
+  const ha=((h%12)+m/60)*30*Math.PI/180, ma=m*6*Math.PI/180;
+  let nums='';for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;nums+=`<text x="${60+42*Math.sin(a)}" y="${60-42*Math.cos(a)+5}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" font-family="Fredoka,sans-serif">${i}</text>`}
+  return `<svg class="clock" viewBox="0 0 120 120" role="img" aria-label="jam analog"><circle cx="60" cy="60" r="56" fill="var(--paper)" stroke="var(--ink)" stroke-width="4"/>${nums}
+  <line x1="60" y1="60" x2="${60+26*Math.sin(ha)}" y2="${60-26*Math.cos(ha)}" stroke="var(--math)" stroke-width="6" stroke-linecap="round"/>
+  <line x1="60" y1="60" x2="${60+40*Math.sin(ma)}" y2="${60-40*Math.cos(ma)}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="60" cy="60" r="4" fill="var(--ink)"/></svg>`;
+}
+
+/* ---------- math (Kurikulum Merdeka: Fase A kls 1–2, B kls 3–4, C kls 5–6) ---------- */
+const MATH_M={
+ 1:[{id:'add10',ic:'+',t:'Penjumlahan sampai 10',d:'3 + 4 = ?'},{id:'pola',ic:'⋯',t:'Pola bilangan',d:'2, 4, 6, ___'},{id:'genap',ic:'2n',t:'Genap & ganjil',d:'Manakah bilangan genap?'},{id:'sub10',ic:'−',t:'Pengurangan sampai 10',d:'9 − 5 = ?'},{id:'add20',ic:'±',t:'Tambah & kurang sampai 20',d:'8 + 7 = ?'},{id:'cmp',ic:'>',t:'Membandingkan bilangan sampai 100',d:'Mana yang paling besar?'}],
+ 2:[{id:'add100',ic:'+',t:'Penjumlahan sampai 100',d:'45 + 32 = ?'},{id:'sub100',ic:'−',t:'Pengurangan sampai 100',d:'80 − 26 = ?'},{id:'jam',ic:'◷',t:'Membaca jam',d:'Jam tepat dan setengah'},{id:'uang',ic:'Rp',t:'Mengenal uang',d:'Rp2.000 + Rp5.000 = ?'},{id:'nilai',ic:'47',t:'Nilai tempat',d:'Angka 4 pada 47 bernilai…'},{id:'pola',ic:'⋯',t:'Pola bilangan',d:'5, 10, 15, ___'}],
+ 3:[{id:'mul10',ic:'×',t:'Perkalian 1–10',d:'7 × 8 = ?'},{id:'div10',ic:'÷',t:'Pembagian dasar',d:'56 ÷ 7 = ?'},{id:'add1000',ic:'±',t:'Tambah & kurang sampai 1.000',d:'435 + 278 = ?'},{id:'cerita3',ic:'?',t:'Soal cerita kali & bagi',d:'4 kotak berisi 6 kue…'},{id:'fracOf',ic:'½',t:'Mengenal pecahan',d:'1/2 dari 10 = ?'},{id:'pola',ic:'⋯',t:'Pola bilangan',d:'12, 18, 24, ___'}],
+ 4:[{id:'mul2d',ic:'×',t:'Perkalian bersusun',d:'34 × 6 = ?'},{id:'div2d',ic:'÷',t:'Pembagian bersusun',d:'144 ÷ 8 = ?'},{id:'fracEq',ic:'⅔',t:'Pecahan senilai',d:'1/2 = ?/8'},{id:'faktor',ic:'f',t:'Faktor & kelipatan',d:'Manakah faktor dari 12?'},{id:'keliling',ic:'▭',t:'Keliling & luas persegi panjang',d:'p = 8 cm, l = 5 cm'},{id:'satuan',ic:'cm',t:'Satuan panjang, berat, waktu',d:'3 m = … cm'}],
+ 5:[{id:'fracAdd',ic:'⅓',t:'Penjumlahan pecahan beda penyebut',d:'1/2 + 1/3 = ?'},{id:'dec',ic:'0,5',t:'Pecahan & desimal',d:'3/4 = 0,75'},{id:'pct',ic:'%',t:'Persen',d:'25% dari 80 = ?'},{id:'kpk',ic:'K',t:'KPK & FPB',d:'KPK dari 4 dan 6 = ?'},{id:'volume',ic:'▣',t:'Volume kubus & balok',d:'Rusuk 5 cm → ? cm³'}],
+ 6:[{id:'mix',ic:'( )',t:'Operasi hitung campuran',d:'6 + 4 × 3 = ?'},{id:'pctStory',ic:'%',t:'Soal cerita diskon',d:'Diskon 25% dari Rp80.000'},{id:'sqcube',ic:'x²',t:'Kuadrat, kubik & akar',d:'12² = ? · ∛27 = ?'},{id:'lingkaran',ic:'○',t:'Luas & keliling lingkaran',d:'π = 22/7'},{id:'rata',ic:'x̄',t:'Rata-rata data',d:'Rata-rata 6, 8, 7, 9, 10'}],
+};
+/* Cambridge Primary Mathematics (Stage 1–6), tampilan tetap berbahasa Indonesia */
+const MATH_C={
+ 1:[{id:'add10',ic:'+',t:'Penjumlahan sampai 10',d:'3 + 4 = ?'},{id:'add20',ic:'±',t:'Tambah & kurang sampai 20',d:'15 − 6 = ?'},{id:'cmp',ic:'>',t:'Membandingkan bilangan',d:'Mana yang paling besar?'},{id:'shape',ic:'△',t:'Mengenal bangun datar',d:'Bangun apakah ini?'},{id:'pola',ic:'⋯',t:'Pola bilangan',d:'2, 4, 6, ___'}],
+ 2:[{id:'add100',ic:'+',t:'Penjumlahan sampai 100',d:'45 + 32 = ?'},{id:'sub100',ic:'−',t:'Pengurangan sampai 100',d:'80 − 26 = ?'},{id:'tables25',ic:'×',t:'Perkalian 2, 5 dan 10',d:'5 × 7 = ?'},{id:'fracHalf',ic:'½',t:'Setengah & seperempat',d:'1/4 dari 12 = ?'},{id:'jamQ',ic:'◷',t:'Membaca jam',d:'Tepat, seperempat, setengah'},{id:'genap',ic:'2n',t:'Genap & ganjil',d:'Manakah bilangan genap?'}],
+ 3:[{id:'add1000',ic:'±',t:'Tambah & kurang sampai 1.000',d:'435 + 278 = ?'},{id:'mul10',ic:'×',t:'Perkalian 1–10',d:'7 × 8 = ?'},{id:'div10',ic:'÷',t:'Pembagian dasar',d:'56 ÷ 7 = ?'},{id:'round',ic:'≈',t:'Pembulatan',d:'47 → puluhan terdekat'},{id:'fracOf',ic:'⅓',t:'Pecahan dari suatu jumlah',d:'1/3 dari 15 = ?'},{id:'cerita3',ic:'?',t:'Soal cerita kali & bagi',d:'4 kotak berisi 6 kue…'},{id:'nilai',ic:'358',t:'Nilai tempat',d:'Angka 5 pada 358 bernilai…'}],
+ 4:[{id:'mul2d',ic:'×',t:'Perkalian bersusun',d:'34 × 6 = ?'},{id:'div2d',ic:'÷',t:'Pembagian bersusun',d:'144 ÷ 8 = ?'},{id:'negTemp',ic:'°C',t:'Bilangan negatif (suhu)',d:'−3°C naik 5°C = ?'},{id:'decTenth',ic:'0,1',t:'Desimal persepuluhan',d:'0,4 + 0,3 = ?'},{id:'fracEq',ic:'⅔',t:'Pecahan senilai',d:'1/2 = ?/8'},{id:'keliling',ic:'▭',t:'Keliling & luas',d:'p = 8 cm, l = 5 cm'}],
+ 5:[{id:'fracAdd',ic:'⅓',t:'Penjumlahan pecahan',d:'1/2 + 1/3 = ?'},{id:'decAdd',ic:'0,01',t:'Desimal perseratusan',d:'3,45 + 1,30 = ?'},{id:'pct',ic:'%',t:'Persen',d:'25% dari 80 = ?'},{id:'mix',ic:'( )',t:'Urutan operasi hitung',d:'6 + 4 × 3 = ?'},{id:'sqcube',ic:'x²',t:'Bilangan kuadrat & kubik',d:'9² = ? · 3³ = ?'}],
+ 6:[{id:'ratio',ic:':',t:'Rasio & proporsi',d:'merah : biru = 2 : 3'},{id:'prob',ic:'🎲',t:'Peluang',d:'Peluang terambil merah?'},{id:'rata',ic:'x̄',t:'Rata-rata (mean)',d:'Rata-rata 6, 8, 7, 9, 10'},{id:'pctStory',ic:'%',t:'Soal cerita diskon',d:'Diskon 25% dari Rp80.000'},{id:'volume',ic:'▣',t:'Volume kubus & balok',d:'Rusuk 5 cm → ? cm³'}],
+};
+const mathSet=()=>(S.cur==='cam'?MATH_C:MATH_M)[S.grade];
+const dfmt=(x,d)=>x.toFixed(d).replace('.',',');
+const fval=s=>{const p=String(s).split('/');return p.length===2?(+p[0])/(+p[1]):+p[0]};
+function polySVG(n){const st=-Math.PI/2+(n%2?0:Math.PI/n);let pts=[];for(let i=0;i<n;i++){const a=st+i*2*Math.PI/n;pts.push((60+48*Math.cos(a)).toFixed(1)+','+(62+48*Math.sin(a)).toFixed(1))}
+  return `<svg class="clock" viewBox="0 0 120 120" role="img" aria-label="bangun datar"><polygon points="${pts.join(' ')}" fill="var(--c2s)" stroke="var(--math)" stroke-width="5" stroke-linejoin="round"/></svg>`}
+function numOpts(a,extra=[]){
+  const s=new Set([a]);extra.forEach(v=>{if(v!==a&&v>=0&&Number.isFinite(v))s.add(v)});
+  const spread=Math.max(3,Math.round(Math.abs(a)*.15));let g=0;
+  while(s.size<4&&g++<200){const v=a+pick([-1,1])*rnd(1,spread);if(v>=0)s.add(v)}
+  return shuffle([...s].slice(0,4));
+}
+function rpOpts(a,extra=[]){
+  const s=new Set([a]);extra.forEach(v=>{if(v!==a&&v>0)s.add(v)});let g=0;
+  const step=a>=20000?5000:500;
+  while(s.size<4&&g++<200){const v=a+pick([-1,1])*step*rnd(1,4);if(v>0)s.add(v)}
+  return shuffle([...s].slice(0,4)).map(rp);
+}
+function strOpts(a,cands){const s=new Set([a]);shuffle(cands.slice()).forEach(c=>{if(s.size<4)s.add(c)});return shuffle([...s])}
+const frac=(n,d)=>{const g=gcd(n,d);return d/g===1?String(n/g):`${n/g}/${d/g}`};
+
+function genMath(id){
+  let q,a,o={};
+  switch(id){
+    case'pola':{const g=S.grade,len=5;let st,d;
+      if(g<=1){d=pick([1,2,5,10]);st=d*rnd(0,4)}else if(g<=2){d=pick([2,3,4,5,10]);st=rnd(1,30)}else{d=pick([3,4,6,7,8,9,25,50]);st=rnd(10,200)}
+      const down=g>=2&&Math.random()<.35,seq=[];for(let i=0;i<len;i++)seq.push(down?st+d*(len-1-i):st+d*i);
+      const hole=Math.random()<.6?len-1:rnd(1,len-2),ans=seq[hole];
+      return{q:seq.map((v,i)=>i===hole?'___':fmt(v)).join(', '),full:1,a:fmt(ans),opts:numOpts(ans,[ans+1,ans-1,ans+d]).map(fmt),
+        hint:down?'Bilangannya berkurang tetap. Berapa selisihnya?':'Bilangannya bertambah tetap. Berapa selisihnya?',review:seq.map(fmt).join(', ')}}
+    case'genap':{const lo=S.grade<=1?1:10,hi=S.grade<=1?20:99,even=Math.random()<.5,want=even?0:1;
+      let ans;do{ans=rnd(lo,hi)}while(ans%2!==want);const s=new Set([ans]);let g=0;while(s.size<4&&g++<200){const v=rnd(lo,hi);if(v%2!==want)s.add(v)}
+      return{q:`Manakah bilangan ${even?'genap':'ganjil'}?`,full:1,small:1,a:String(ans),opts:shuffle([...s]).map(String),
+        hint:even?'Genap: angka satuannya 0, 2, 4, 6, atau 8':'Ganjil: angka satuannya 1, 3, 5, 7, atau 9'}}
+    case'nilai':{const three=S.grade>=3||Math.random()<.3;let n;do{n=three?rnd(101,999):rnd(11,99)}while(new Set(String(n)).size!==String(n).length);
+      const ds=String(n).split('');let pos;do{pos=rnd(0,ds.length-1)}while(ds[pos]==='0');
+      const dig=+ds[pos],place=10**(ds.length-1-pos),ans=dig*place,name={1:'satuan',10:'puluhan',100:'ratusan'}[place];
+      if(Math.random()<.5)return{q:`Pada bilangan ${n}, angka ${dig} bernilai…`,full:1,small:1,a:fmt(ans),opts:strOpts(fmt(ans),[dig,dig*10,dig*100,dig*1000].filter(v=>v!==ans).map(fmt)),hint:'Lihat letak angkanya'};
+      return{q:`Pada bilangan ${n}, angka ${dig} menempati tempat…`,full:1,small:1,a:name,opts:strOpts(name,['satuan','puluhan','ratusan','ribuan'].filter(v=>v!==name))}}
+    case'add10':{const x=rnd(0,10),y=rnd(0,10-x);q=`${x} + ${y}`;a=x+y;break}
+    case'sub10':{const x=rnd(1,10),y=rnd(0,x);q=`${x} − ${y}`;a=x-y;break}
+    case'add20':{if(Math.random()<.5){const x=rnd(3,12),y=rnd(2,20-x);q=`${x} + ${y}`;a=x+y}else{const x=rnd(11,20),y=rnd(2,x);q=`${x} − ${y}`;a=x-y}break}
+    case'cmp':{const s=new Set();while(s.size<4)s.add(rnd(10,99));const arr=[...s];const big=Math.random()<.5;
+      return{q:big?'Mana bilangan yang paling besar?':'Mana bilangan yang paling kecil?',full:1,small:1,a:String(big?Math.max(...arr):Math.min(...arr)),opts:arr.map(String)}}
+    case'add100':{const x=rnd(10,80),y=rnd(5,99-x);q=`${x} + ${y}`;a=x+y;break}
+    case'sub100':{const x=rnd(20,99),y=rnd(5,x);q=`${x} − ${y}`;a=x-y;break}
+    case'jam':{const h=rnd(1,12),m=pick([0,30]);const lab=(hh,mm)=>`pukul ${((hh+11)%12)+1}.${mm?'30':'00'}`;
+      const ans=lab(h,m);return{q:'Jam berapa sekarang?',html:clockSVG(h,m),full:1,small:1,a:ans,opts:strOpts(ans,[lab(h,m?0:30),lab(h+1,m),lab(h-1,m),lab(h+1,m?0:30),lab(m?6:12,h*5%60===0?0:30)])
+        ,hint:'Jarum pendek = jam, jarum panjang = menit'}}
+    case'uang':{if(Math.random()<.5){const n=rnd(2,3),parts=[];for(let i=0;i<n;i++)parts.push(pick([500,1000,2000,5000]));const sum=parts.reduce((s,v)=>s+v,0);
+        return{q:parts.map(rp).join(' + '),a:rp(sum),opts:rpOpts(sum)}}
+      const have=pick([5000,10000,20000]),price=500*rnd(2,have/500-1),name=pick(['Ani','Budi','Siti','Rafi']),item=pick(['permen','buku tulis','pensil','roti']);
+      return{q:`${name} punya ${rp(have)}. Ia membeli ${item} seharga ${rp(price)}. Berapa sisa uangnya?`,full:1,small:1,a:rp(have-price),opts:rpOpts(have-price,[price])}}
+    case'mul10':{const x=rnd(2,10),y=rnd(2,10);q=`${x} × ${y}`;a=x*y;o.extra=[x+y,x*(y+1)];break}
+    case'div10':{const y=rnd(2,10),a0=rnd(2,10);q=`${y*a0} ÷ ${y}`;a=a0;break}
+    case'add1000':{if(Math.random()<.5){const x=rnd(100,700),y=rnd(50,999-x);q=`${x} + ${y}`;a=x+y}else{const x=rnd(200,999),y=rnd(50,x);q=`${x} − ${y}`;a=x-y}break}
+    case'cerita3':{const nm=pick(['Ibu','Pak Guru','Dina','Rudi']);
+      if(Math.random()<.5){const x=rnd(3,9),y=rnd(3,9),it=pick([['kotak','kue'],['keranjang','jeruk'],['plastik','kelereng']]);
+        return{q:`${nm} punya ${x} ${it[0]}. Setiap ${it[0]} berisi ${y} ${it[1]}. Berapa jumlah semua ${it[1]}?`,full:1,small:1,a:fmt(x*y),opts:numOpts(x*y,[x+y]).map(fmt)}}
+      const y=rnd(2,8),k=rnd(2,9);return{q:`${nm} membagi ${y*k} permen sama rata kepada ${y} anak. Setiap anak mendapat berapa permen?`,full:1,small:1,a:fmt(k),opts:numOpts(k,[y*k-y]).map(fmt)}}
+    case'fracOf':{const d=pick([2,3,4,5]),k=rnd(2,6),n=d*k;q=`1/${d} dari ${n}`;a=k;o.extra=[n-d,d];o.hint='Bagi dulu sama banyak';break}
+    case'mul2d':{const x=rnd(12,99),y=rnd(3,9);q=`${x} × ${y}`;a=x*y;break}
+    case'div2d':{const y=rnd(3,9),a0=rnd(11,40);q=`${y*a0} ÷ ${y}`;a=a0;break}
+    case'fracEq':{let n,d;do{d=pick([2,3,4,5]);n=rnd(1,d-1)}while(gcd(n,d)>1);const k=rnd(2,5);
+      return{q:`${n}/${d} = ?/${d*k}`,a:fmt(n*k),opts:numOpts(n*k,[n+k,d*k-n]).map(fmt),hint:`Penyebut dikali ${k}, pembilang juga`}}
+    case'faktor':{if(Math.random()<.5){const n=pick([12,16,18,20,24,28,30,36]);const fs=[];for(let i=2;i<n;i++)if(n%i===0)fs.push(i);
+        const ans=pick(fs),wr=[];for(let i=2;i<n;i++)if(n%i)wr.push(i);return{q:`Manakah faktor dari ${n}?`,full:1,small:1,a:String(ans),opts:shuffle([ans,...shuffle(wr).slice(0,3)]).map(String)}}
+      const b=rnd(3,9),ans=b*rnd(2,9),wr=[];for(let v=ans-12;v<=ans+12;v++)if(v>0&&v%b)wr.push(v);
+      return{q:`Manakah kelipatan ${b}?`,full:1,small:1,a:String(ans),opts:shuffle([ans,...shuffle(wr).slice(0,3)]).map(String)}}
+    case'keliling':{const p=rnd(4,15),l=rnd(2,p-1),K=2*(p+l),L=p*l;
+      if(Math.random()<.5)return{q:`Keliling persegi panjang dengan panjang ${p} cm dan lebar ${l} cm`,full:1,small:1,a:K+' cm',opts:numOpts(K,[L,p+l]).map(v=>v+' cm'),hint:'K = 2 × (p + l)'};
+      return{q:`Luas persegi panjang dengan panjang ${p} cm dan lebar ${l} cm`,full:1,small:1,a:L+' cm²',opts:numOpts(L,[K,p+l]).map(v=>v+' cm²'),hint:'L = p × l'}}
+    case'satuan':{const t=pick([['m','cm',100],['km','m',1000],['kg','g',1000],['jam','menit',60],['menit','detik',60],['lusin','buah',12]]),x=rnd(2,9),ans=x*t[2];
+      return{q:`${x} ${t[0]} = … ${t[1]}`,full:1,a:fmt(ans),opts:numOpts(ans,[x*10,x*100,x*1000,x*60].filter(v=>v!==ans)).map(fmt)}}
+    case'fracAdd':{let d1,d2;do{d1=pick([2,3,4,5,6]);d2=pick([2,3,4,5,6])}while(d1===d2);const n1=rnd(1,d1-1),n2=rnd(1,d2-1);
+      const num=n1*d2+n2*d1,den=d1*d2,ans=frac(num,den);const g=gcd(num,den);
+      return{q:`${n1}/${d1} + ${n2}/${d2}`,a:ans,opts:strOpts(ans,[`${n1+n2}/${d1+d2}`,`${n1+n2}/${den}`,frac(num+1,den),frac(num,den+d1)].filter(v=>v!==ans)),hint:'Samakan penyebutnya dulu'}}
+    case'dec':{const P=[['1/2','0,5'],['1/4','0,25'],['3/4','0,75'],['1/5','0,2'],['2/5','0,4'],['3/5','0,6'],['4/5','0,8'],['1/10','0,1'],['3/10','0,3'],['7/10','0,7'],['9/10','0,9']];const x=pick(P);
+      if(Math.random()<.5)return{q:`${x[0]} = … (desimal)`,full:1,a:x[1],opts:strOpts(x[1],P.map(p=>p[1]).filter(v=>v!==x[1]))};
+      return{q:`${x[1]} = … (pecahan)`,full:1,a:x[0],opts:strOpts(x[0],P.map(p=>p[0]).filter(v=>v!==x[0]))}}
+    case'pct':{if(Math.random()<.6){const p=pick([10,20,25,50,75]),base=pick([20,40,60,80,100,120,200]);q=`${p}% dari ${base}`;a=base*p/100;o.extra=[base-base*p/100];break}
+      const x=pick([['1/2','50%'],['1/4','25%'],['3/4','75%'],['1/5','20%'],['2/5','40%'],['1/10','10%']]);
+      return{q:`${x[0]} = … %`,full:1,a:x[1],opts:strOpts(x[1],['50%','25%','75%','20%','40%','10%','12%','5%'].filter(v=>v!==x[1]))}}
+    case'kpk':{if(Math.random()<.5){const x=rnd(2,12),y=rnd(2,12);q=`KPK dari ${x} dan ${y}`;a=x*y/gcd(x,y);o.extra=[x*y,gcd(x,y)]}
+      else{const m=rnd(2,6),p=m*rnd(2,8),r=m*rnd(2,8);q=`FPB dari ${p} dan ${r}`;a=gcd(p,r);o.extra=[p*r/gcd(p,r)]}o.full=1;o.small=1;q+=' = ?';break}
+    case'volume':{if(Math.random()<.5){const s=rnd(2,10),V=s**3;return{q:`Volume kubus dengan rusuk ${s} cm`,full:1,small:1,a:fmt(V)+' cm³',opts:numOpts(V,[s*s,s*3,6*s*s]).map(v=>fmt(v)+' cm³'),hint:'V = s × s × s'}}
+      const p=rnd(3,12),l=rnd(2,8),t=rnd(2,10),V=p*l*t;return{q:`Volume balok dengan p = ${p} cm, l = ${l} cm, t = ${t} cm`,full:1,small:1,a:fmt(V)+' cm³',opts:numOpts(V,[p+l+t,p*l]).map(v=>fmt(v)+' cm³'),hint:'V = p × l × t'}}
+    case'mix':{const x=rnd(2,20),y=rnd(2,9),z=rnd(2,9);if(Math.random()<.5){q=`${x} + ${y} × ${z}`;a=x+y*z}else{q=`(${x} + ${y}) × ${z}`;a=(x+y)*z}
+      o.extra=[(x+y)*z,x+y*z];o.hint='Kali/bagi dikerjakan dulu, kecuali ada kurung';break}
+    case'pctStory':{const price=pick([40000,60000,80000,100000,120000,200000]),d=pick([10,20,25,50]),cut=price*d/100,item=pick(['tas','sepatu','baju','mainan']);
+      return{q:`Harga ${item} ${rp(price)}, mendapat diskon ${d}%. Berapa harga setelah diskon?`,full:1,small:1,a:rp(price-cut),opts:rpOpts(price-cut,[cut,price+cut])}}
+    case'sqcube':{const v=rnd(0,3),x=rnd(2,v<2?15:10);
+      if(v===0){q=`${x}²`;a=x*x;o.extra=[x*2];o.hint=`${x} × ${x}`}
+      else if(v===1){q=`√${x*x}`;a=x;o.extra=[x*2,x*x/2|0]}
+      else if(v===2){q=`${x}³`;a=x**3;o.extra=[x*3,x*x];o.hint=`${x} × ${x} × ${x}`}
+      else{q=`∛${x**3}`;a=x;o.extra=[x*3]}break}
+    case'lingkaran':{const r=pick([7,14,21,28]),L=22*r*r/7,K=2*22*r/7,useD=Math.random()<.4,gv=useD?`diameter ${2*r} cm`:`jari-jari ${r} cm`;
+      if(Math.random()<.5)return{q:`Luas lingkaran dengan ${gv}`,full:1,small:1,a:fmt(L)+' cm²',opts:numOpts(L,[K,22*4*r*r/7]).map(v=>fmt(v)+' cm²'),hint:'L = π × r × r, π = 22/7'};
+      return{q:`Keliling lingkaran dengan ${gv}`,full:1,small:1,a:fmt(K)+' cm',opts:numOpts(K,[L,K/2]).map(v=>fmt(v)+' cm'),hint:'K = 2 × π × r, π = 22/7'}}
+    case'rata':{let nums,m;do{m=rnd(5,20);nums=[];for(let i=0;i<4;i++)nums.push(m+rnd(-4,4));nums.push(5*m-nums.reduce((s,v)=>s+v,0))}while(nums[4]<=0);
+      return{q:`Rata-rata dari ${nums.join(', ')}`,full:1,small:1,a:fmt(m),opts:numOpts(m,[Math.max(...nums),nums.reduce((s,v)=>s+v,0)]).map(fmt),hint:'Jumlahkan semua, lalu bagi banyaknya data'}}
+
+    case'shape':{const SH=[['segitiga',3],['persegi',4],['segi lima',5],['segi enam',6],['segi delapan',8]],x=pick(SH);
+      if(Math.random()<.5)return{q:'Bangun apakah ini?',html:polySVG(x[1]),full:1,small:1,a:x[0],opts:strOpts(x[0],SH.map(s=>s[0]).filter(v=>v!==x[0]))};
+      return{q:`Berapa banyak sisi ${x[0]}?`,html:polySVG(x[1]),full:1,small:1,a:String(x[1]),opts:numOpts(x[1]).map(String),hint:'Hitung garis lurusnya'}}
+    case'tables25':{const x=pick([2,5,10]),y=rnd(1,12);q=Math.random()<.5?`${x} × ${y}`:`${y} × ${x}`;a=x*y;o.extra=[x+y,x*(y+1)];break}
+    case'fracHalf':{const d=pick([2,4]),num=d===4&&Math.random()<.4?3:1,k=rnd(2,6),n=d*k;q=`${num}/${d} dari ${n}`;a=num*k;o.extra=[n/2,k,n-d];break}
+    case'jamQ':{const h=rnd(1,12),m=pick([0,15,30,45]);const lab=(hh,mm)=>`pukul ${((hh+11)%12)+1}.${String(mm).padStart(2,'0')}`;const ans=lab(h,m);
+      return{q:'Jam berapa sekarang?',html:clockSVG(h,m),full:1,small:1,a:ans,opts:strOpts(ans,[lab(h,(m+15)%60),lab(h,(m+30)%60),lab(h+1,m),lab(h-1,m),lab(m/5||12,h*5%60)]),hint:'Jarum panjang di angka 3 = lewat 15 menit'}}
+    case'round':{const to=pick([10,100]);let n=to===10?rnd(11,99):rnd(101,999);if(n%to===0)n++;const ans=Math.round(n/to)*to;
+      return{q:`${n} dibulatkan ke ${to===10?'puluhan':'ratusan'} terdekat`,full:1,small:1,a:fmt(ans),opts:numOpts(ans,[ans-to,ans+to,Math.floor(n/to)*to,Math.ceil(n/to)*to]).map(fmt),hint:to===10?'Lihat angka satuan: 5 ke atas dibulatkan naik':'Lihat angka puluhan: 5 ke atas dibulatkan naik'}}
+    case'negTemp':{const t1=rnd(-8,8),c=rnd(2,10),up=Math.random()<.5,ans=up?t1+c:t1-c;
+      const s=new Set([ans]);[-ans,up?t1-c:t1+c,ans+1,ans-1,ans+2].forEach(v=>{if(s.size<4)s.add(v)});const deg=v=>fmt(v)+'°C';
+      return{q:up?`Suhu pagi ${deg(t1)}. Siang hari suhu naik ${c}°C. Berapa suhu siang?`:`Suhu sore ${deg(t1)}. Malam hari suhu turun ${c}°C. Berapa suhu malam?`,full:1,small:1,a:deg(ans),opts:shuffle([...s]).map(deg),hint:'Bayangkan termometer: naik ke atas, turun ke bawah'}}
+    case'decTenth':{const x=rnd(1,8),y=rnd(1,9),sm=x+y,ans=dfmt(sm/10,1);
+      return{q:`0,${x} + 0,${y}`,a:ans,opts:strOpts(ans,[sm>=10?`0,${sm}`:dfmt((sm+2)/10,1),dfmt((sm+1)/10,1),dfmt(Math.max(1,sm-1)/10,1),dfmt(sm/100,2)].filter(v=>v!==ans))}}
+    case'decAdd':{let X=rnd(100,999),Y=rnd(100,599),plus=Math.random()<.6;if(!plus&&X<Y)[X,Y]=[Y,X];const R=plus?X+Y:X-Y,c=v=>dfmt(v/100,2),ans=c(R);
+      return{q:`${c(X)} ${plus?'+':'−'} ${c(Y)}`,a:ans,opts:strOpts(ans,[c(R+10),c(R-1),c(R+100),c(R-10),c(R+1)].filter(v=>v!==ans)),hint:'Sejajarkan tanda komanya'}}
+    case'ratio':{let r1,r2;do{r1=rnd(1,5);r2=rnd(1,5)}while(r1===r2);const k=rnd(2,6),it=pick(['kelereng','permen','pensil']);
+      return{q:`Perbandingan ${it} merah dan biru adalah ${r1} : ${r2}. Jika ada ${r1*k} ${it} merah, berapa ${it} biru?`,full:1,small:1,a:fmt(r2*k),opts:numOpts(r2*k,[r1*k+(r2-r1),r2*k+r1,r1*k]).map(fmt),hint:`${r1} dikali berapa supaya jadi ${r1*k}?`}}
+    case'prob':{const C=[['merah',rnd(1,5)],['biru',rnd(1,5)],['hijau',rnd(0,4)]].filter(x=>x[1]>0),tot=C.reduce((s,x)=>s+x[1],0),x=pick(C),ans=frac(x[1],tot);
+      const cands=[`${x[1]}/${tot-x[1]}`,`1/${tot}`,`${x[1]}/${tot+1}`,`${x[1]+1}/${tot+1}`,`${tot}/${x[1]}`,...C.filter(y=>y!==x).map(y=>frac(y[1],tot)),frac(tot-x[1],tot)].filter(v=>Math.abs(fval(v)-fval(ans))>1e-9);
+      return{q:`Di dalam kantong ada ${C.map(y=>y[1]+' kelereng '+y[0]).join(', ')}. Diambil 1 tanpa melihat. Berapa peluang terambil kelereng ${x[0]}?`,full:1,small:1,a:ans,opts:strOpts(ans,cands),hint:'Peluang = banyak yang diinginkan ÷ banyak semuanya'}}
+  }
+  if(!o.full&&VARY_OK.has(id)&&Math.random()<.55){const v=varyMath(q,a);if(v)return v}
+  return{q:o.full?q:q+' = ?',full:1,small:o.small,a:fmt(a),opts:numOpts(a,o.extra||[]).map(fmt),hint:o.hint};
+}
+
+/* ---------- variasi bentuk soal hitung: bilangan hilang, benar/salah, soal cerita, gambar ---------- */
+const VARY_OK=new Set(['add10','sub10','add20','add100','sub100','mul10','div10','add1000','mul2d','div2d','tables25']);
+const NAMES=['Ani','Budi','Siti','Rafi','Dina','Bayu','Laila','Putra','Nisa','Fajar'];
+const ITEMS=['kelereng','permen','pensil','stiker','jeruk','buku','balon','kue'];
+function varyMath(q,a){
+  const m=/^(\d+) ([+−×÷]) (\d+)$/.exec(q);if(!m)return null;
+  const x=+m[1],op=m[2],y=+m[3];if(x===0||y===0)return null;
+  const full=`${x} ${op} ${y} = ${fmt(a)}`;
+  const kinds=['hole2','hole1','tf','story','story'];
+  if(op==='+'&&a<=10&&S.grade<=2)kinds.push('pic','pic');
+  const k=pick(kinds);
+  if(k==='hole2'||k==='hole1'){
+    const ans=k==='hole2'?y:x,qq=k==='hole2'?`${x} ${op} ___ = ${fmt(a)}`:`___ ${op} ${y} = ${fmt(a)}`;
+    return{q:qq,full:1,a:fmt(ans),opts:numOpts(ans,[a,k==='hole2'?x:y].filter(v=>v!==ans)).map(fmt),hint:'Bilangan berapa yang hilang?',review:full};
+  }
+  if(k==='tf'){
+    const right=Math.random()<.5;let shown=a;
+    if(!right){const ds=[-2,-1,1,2,op==='×'?x:10].filter(d=>a+d>=0&&d!==0);shown=a+pick(ds)}
+    return{q:`${x} ${op} ${y} = ${fmt(shown)}`,full:1,a:right?'Benar':'Salah',opts:['Benar','Salah'],hint:'Benar atau salah?',review:full,explain:right?'':`Yang benar: ${full}`};
+  }
+  if(k==='pic'){
+    const e=pick(['🍎','⭐','🐟','🎈','🍓','🐥','🚗','🌸']);
+    return{q:`${x} + ${y} = ?`,full:1,html:`<div class="pic" style="font-size:34px;line-height:1.35;max-width:100%;overflow-wrap:anywhere">${e.repeat(x)} ➕ ${e.repeat(y)}</div>`,a:fmt(a),opts:numOpts(a).map(fmt),hint:'Hitung semua gambarnya'};
+  }
+  const nm=pick(NAMES),it=pick(ITEMS);let s,wrong;
+  if(op==='+'){s=`${nm} punya ${x} ${it}. Lalu ${nm} mendapat ${y} ${it} lagi. Berapa ${it} ${nm} sekarang?`;wrong=Math.abs(x-y)}
+  else if(op==='−'){s=`${nm} punya ${x} ${it}. Sebanyak ${y} ${it} diberikan kepada adik. Berapa sisa ${it} ${nm}?`;wrong=x+y}
+  else if(op==='×'){s=`${nm} punya ${x} kantong. Setiap kantong berisi ${y} ${it}. Berapa jumlah semua ${it}?`;wrong=x+y}
+  else{s=`${nm} membagi ${x} ${it} sama rata kepada ${y} teman. Setiap teman mendapat berapa ${it}?`;wrong=x-y}
+  return{q:s,full:1,small:1,a:fmt(a),opts:numOpts(a,[wrong]).map(fmt),hint:'Tulis dulu kalimat matematikanya',review:`${s} → ${full}`};
+}
+
+/* ---------- english ---------- */
+const NUMW=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
+const V=(t,ic,lv,w)=>({type:'v',t,ic,lv,w});
+const T=(t,ic,lv,ex,gen)=>({type:'t',t,ic,lv,ex,gen});
+const DAYS=[['Monday','Senin'],['Tuesday','Selasa'],['Wednesday','Rabu'],['Thursday','Kamis'],['Friday','Jumat'],['Saturday','Sabtu'],['Sunday','Minggu']];
+const MONTHS=[['January','Januari'],['February','Februari'],['March','Maret'],['April','April'],['May','Mei'],['June','Juni'],['July','Juli'],['August','Agustus'],['September','September'],['October','Oktober'],['November','November'],['December','Desember']];
+const OPP=[['big','small'],['hot','cold'],['tall','short'],['happy','sad'],['fast','slow'],['clean','dirty'],['open','closed'],['heavy','light'],['old','young'],['full','empty'],['early','late'],['strong','weak'],['rich','poor'],['wet','dry'],['loud','quiet'],['hard','soft'],['near','far'],['up','down'],['in','out'],['day','night'],['black','white'],['cheap','expensive'],['easy','difficult'],['right','wrong'],['first','last'],['thick','thin'],['sweet','sour'],['high','low'],['push','pull'],['buy','sell'],['win','lose'],['come','go'],['start','finish'],['laugh','cry'],['give','take']];
+const GRAM=[
+ ['I ___ to school every day.','go',['goes','going','went'],'Saya pergi ke sekolah setiap hari.'],
+ ['She ___ a book every night.','reads',['read','reading','to read'],'Dia (pr) membaca buku setiap malam.'],
+ ['They ___ football in the afternoon.','play',['plays','playing','is play'],'Mereka bermain sepak bola di sore hari.'],
+ ['He ___ milk every morning.','drinks',['drink','drinking','are drink'],'Dia (lk) minum susu setiap pagi.'],
+ ['We ___ students.','are',['is','am','be'],'Kami adalah pelajar.'],
+ ['I ___ ten years old.','am',['is','are','be'],'Saya berumur sepuluh tahun.'],
+ ['My mother ___ a teacher.','is',['are','am','be'],'Ibu saya seorang guru.'],
+ ['There ___ three cats in the garden.','are',['is','am','be'],'Ada tiga kucing di kebun.'],
+ ['There ___ a bird on the tree.','is',['are','am','be'],'Ada seekor burung di pohon.'],
+ ['___ is your name?','What',['Where','When','How'],'Siapa namamu?'],
+ ['___ do you live?','Where',['What','Who','How'],'Di mana kamu tinggal?'],
+ ['___ old are you?','How',['What','Where','Who'],'Berapa umurmu?'],
+ ['___ is that boy? He is my brother.','Who',['What','Where','When'],'Siapa anak laki-laki itu? Dia saudaraku.'],
+ ['___ is your birthday? It is in May.','When',['Where','Who','What'],'Kapan ulang tahunmu? Di bulan Mei.'],
+ ['___ many pencils do you have?','How',['What','Who','Where'],'Berapa banyak pensil yang kamu punya?'],
+ ['The book is ___ the table.','on',['at','of','to'],'Buku itu di atas meja.'],
+ ['The cat is ___ the box.','in',['on','at','of'],'Kucing itu di dalam kotak.'],
+ ['The ball is ___ the chair.','under',['in','of','to'],'Bola itu di bawah kursi.'],
+ ['I wake up ___ six o\'clock.','at',['on','in','of'],'Saya bangun pukul enam.'],
+ ['My birthday is ___ May.','in',['at','on','to'],'Ulang tahunku di bulan Mei.'],
+ ['We go to the mosque ___ Friday.','on',['in','at','to'],'Kami pergi ke masjid pada hari Jumat.'],
+ ['Yesterday I ___ my grandmother.','visited',['visit','visits','visiting'],'Kemarin saya mengunjungi nenek.'],
+ ['Last night we ___ a movie.','watched',['watch','watches','watching'],'Tadi malam kami menonton film.'],
+ ['Look! The baby ___ now.','is sleeping',['sleep','sleeps','slept'],'Lihat! Bayinya sedang tidur sekarang.'],
+ ['Listen! Sinta ___ a song.','is singing',['sing','sings','sang'],'Dengar! Sinta sedang menyanyikan lagu.'],
+ ['This is ___ apple.','an',['a','the','two'],'Ini sebuah apel.'],
+ ['I have ___ cat and a dog.','a',['an','two','many'],'Saya punya seekor kucing dan seekor anjing.'],
+ ['These ___ my shoes.','are',['is','am','be'],'Ini sepatu-sepatuku.'],
+ ['I can ___ fast.','run',['runs','running','ran'],'Saya bisa berlari cepat.'],
+ ['Rina ___ like spinach.','doesn\'t',['don\'t','isn\'t','aren\'t'],'Rina tidak suka bayam.'],
+ ['___ you like ice cream? Yes, I do.','Do',['Does','Are','Is'],'Apakah kamu suka es krim? Ya.'],
+ ['My father is ___ than me.','taller',['tall','tallest','more tall'],'Ayahku lebih tinggi dariku.'],
+ ['This is the ___ day of the year!','best',['good','better','goodest'],'Ini hari terbaik tahun ini!'],
+];
+const ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const SAT=['nol','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan'];
+const numEn=n=>n===100?'one hundred':n<20?ONES[n]:TENS[Math.floor(n/10)]+(n%10?'-'+ONES[n%10]:'');
+const numId=n=>n===100?'seratus':n<10?SAT[n]:n===10?'sepuluh':n===11?'sebelas':n<20?SAT[n-10]+' belas':SAT[Math.floor(n/10)]+' puluh'+(n%10?' '+SAT[n%10]:'');
+const numItems=(a,b)=>Array.from({length:b-a+1},(_,i)=>[numEn(a+i),numId(a+i),String(a+i)]);
+const ENG={
+ colors:V('Warna','🎨',1,[['red','merah','#e53935'],['blue','biru','#1e63d6'],['green','hijau','#2e9d4f'],['yellow','kuning','#f6c90e'],['black','hitam','#1b1b1b'],['white','putih','#ffffff'],['purple','ungu','#8e44ad'],['pink','merah muda','#f48fb1'],['brown','cokelat','#8d5524'],['orange','oranye','#f57c00'],['gray','abu-abu','#9e9e9e'],['gold','emas','#d4af37'],['light blue','biru muda','#81d4fa'],['dark green','hijau tua','#1b5e20']]),
+ numbers:V('Angka 1–20','🔢',1,numItems(1,20)),
+ animals:V('Hewan','🐱',1,[['cat','kucing','🐱'],['dog','anjing','🐶'],['bird','burung','🐦'],['fish','ikan','🐟'],['rabbit','kelinci','🐰'],['elephant','gajah','🐘'],['monkey','monyet','🐒'],['cow','sapi','🐮'],['chicken','ayam','🐔'],['horse','kuda','🐴'],['tiger','harimau','🐯'],['duck','bebek','🦆'],['lion','singa','🦁'],['bear','beruang','🐻'],['pig','babi','🐷'],['sheep','domba','🐑'],['goat','kambing','🐐'],['frog','katak','🐸'],['snake','ular','🐍'],['turtle','kura-kura','🐢'],['butterfly','kupu-kupu','🦋'],['bee','lebah','🐝'],['ant','semut','🐜'],['mouse','tikus','🐭'],['giraffe','jerapah','🦒'],['zebra','zebra','🦓'],['crocodile','buaya','🐊'],['penguin','penguin','🐧'],['owl','burung hantu','🦉'],['whale','paus','🐳'],['dolphin','lumba-lumba','🐬'],['shark','hiu','🦈'],['spider','laba-laba','🕷️'],['camel','unta','🐫'],['kangaroo','kanguru','🦘'],['snail','siput','🐌']]),
+ fruits:V('Buah & sayur','🍎',1,[['apple','apel','🍎'],['banana','pisang','🍌'],['orange','jeruk','🍊'],['grapes','anggur','🍇'],['watermelon','semangka','🍉'],['mango','mangga','🥭'],['pineapple','nanas','🍍'],['strawberry','stroberi','🍓'],['coconut','kelapa','🥥'],['cherry','ceri','🍒'],['pear','pir','🍐'],['peach','persik','🍑'],['lemon','lemon','🍋'],['kiwi','kiwi','🥝'],['avocado','alpukat','🥑'],['melon','melon','🍈'],['tomato','tomat','🍅'],['carrot','wortel','🥕'],['potato','kentang','🥔'],['eggplant','terong','🍆'],['broccoli','brokoli','🥦'],['cucumber','mentimun','🥒'],['chili','cabai','🌶️'],['mushroom','jamur','🍄'],['onion','bawang','🧅'],['garlic','bawang putih','🧄'],['peanuts','kacang','🥜'],['corn','jagung','🌽']]),
+ body:V('Anggota tubuh','👂',1,[['eye','mata','👁️'],['ear','telinga','👂'],['nose','hidung','👃'],['mouth','mulut','👄'],['hand','tangan','✋'],['foot','telapak kaki','🦶'],['tooth','gigi','🦷'],['leg','kaki','🦵'],['arm','lengan','💪'],['finger','jari','☝️'],['tongue','lidah','👅'],['brain','otak','🧠'],['bone','tulang','🦴'],['face','wajah','🙂'],['thumb','ibu jari','👍'],['nail','kuku','💅']]),
+ greet:T('Sapaan','👋',1,'Good morning, thank you, …',()=>{const G=[['Good morning','Selamat pagi'],['Good afternoon','Selamat siang/sore'],['Good evening','Selamat malam'],['Good night','Selamat tidur'],['Thank you','Terima kasih'],['You\'re welcome','Sama-sama'],['Sorry','Maaf'],['Excuse me','Permisi'],['Goodbye','Sampai jumpa'],['See you later','Sampai nanti'],['Please','Tolong / silakan'],['Hello','Halo'],['How are you?','Apa kabar?'],['I\'m fine, thank you','Saya baik, terima kasih'],['Nice to meet you','Senang bertemu denganmu'],['Happy birthday','Selamat ulang tahun'],['Welcome','Selamat datang'],['Congratulations','Selamat (atas keberhasilanmu)']];const x=pick(G);
+   return{q:`"${x[1]}" dalam bahasa Inggris adalah…`,a:x[0],opts:strOpts(x[0],G.map(g=>g[0]).filter(v=>v!==x[0])),say:x[0],mean:`${x[0]} = ${x[1]}`}}),
+ school:V('Di sekolah','🎒',2,[['book','buku','📕'],['books','buku-buku','📚'],['pencil','pensil','✏️'],['pen','pulpen','🖊️'],['notebook','buku tulis','📓'],['paper','kertas','📄'],['bag','tas','🎒'],['ruler','penggaris','📏'],['scissors','gunting','✂️'],['clock','jam dinding','⏰'],['computer','komputer','💻'],['chair','kursi','🪑'],['crayon','krayon','🖍️'],['brush','kuas','🖌️'],['map','peta','🗺️'],['globe','bola dunia','🌍'],['bell','bel','🔔'],['trophy','piala','🏆'],['medal','medali','🏅'],['microscope','mikroskop','🔬'],['magnet','magnet','🧲'],['calendar','kalender','📅'],['envelope','amplop','✉️'],['ball','bola','⚽']]),
+ family:V('Keluarga & orang','👪',2,[['father','ayah','👨'],['mother','ibu','👩'],['brother','saudara laki-laki','👦'],['sister','saudara perempuan','👧'],['grandfather','kakek','👴'],['grandmother','nenek','👵'],['baby','bayi','👶'],['family','keluarga','👪'],['king','raja','🤴'],['queen','ratu','👸']]),
+ food:V('Makanan & minuman','🍚',2,[['rice','nasi','🍚'],['bread','roti','🍞'],['egg','telur','🥚'],['milk','susu','🥛'],['noodles','mi','🍜'],['cake','kue','🍰'],['ice cream','es krim','🍦'],['water','air','💧'],['soup','sup','🍲'],['curry','kari','🍛'],['fried chicken','ayam goreng','🍗'],['meat','daging','🥩'],['cheese','keju','🧀'],['pizza','pizza','🍕'],['burger','burger','🍔'],['sandwich','roti lapis','🥪'],['french fries','kentang goreng','🍟'],['cookie','biskuit','🍪'],['chocolate','cokelat','🍫'],['candy','permen','🍬'],['honey','madu','🍯'],['tea','teh','🍵'],['coffee','kopi','☕'],['juice','jus','🧃'],['salad','salad','🥗'],['popcorn','popcorn','🍿'],['doughnut','donat','🍩'],['satay','sate','🍢']]),
+ actions:V('Kata kerja','🏃',2,[['run','berlari','🏃'],['walk','berjalan','🚶'],['swim','berenang','🏊'],['read','membaca','📖'],['sleep','tidur','😴'],['write','menulis','✍️'],['sing','bernyanyi','🎤'],['dance','menari','💃'],['cook','memasak','🍳'],['ride a bike','naik sepeda','🚴'],['eat','makan','🍽️'],['climb','memanjat','🧗'],['laugh','tertawa','😂'],['cry','menangis','😢'],['play football','main sepak bola','⚽'],['play the guitar','main gitar','🎸'],['play the piano','main piano','🎹'],['take a photo','memotret','📷'],['listen to music','mendengarkan musik','🎧'],['watch TV','menonton TV','📺'],['call','menelepon','📞'],['surf','berselancar','🏄'],['paint','melukis','🎨'],['wave','melambaikan tangan','👋'],['drive','menyetir','🚗'],['fish','memancing','🎣']]),
+ numbers2:V('Angka 20–100','💯',2,numItems(20,100)),
+ days:T('Nama hari','📅',2,'Monday, Tuesday, …',()=>{const i=rnd(0,6),x=DAYS[i];
+   if(Math.random()<.5)return{q:`"${x[1]}" dalam bahasa Inggris adalah…`,a:x[0],opts:strOpts(x[0],DAYS.map(d=>d[0]).filter(v=>v!==x[0])),say:x[0],mean:`${x[0]} = ${x[1]}`};
+   if(Math.random()<.5){const n=DAYS[(i+1)%7];return{q:`The day after ${x[0]} is…`,hint:`Hari setelah ${x[1]} adalah…`,a:n[0],opts:strOpts(n[0],DAYS.map(d=>d[0]).filter(v=>v!==n[0])),say:`The day after ${x[0]} is ${n[0]}`,mean:`${n[0]} = ${n[1]}`}}
+   const p=DAYS[(i+6)%7];return{q:`The day before ${x[0]} is…`,hint:`Hari sebelum ${x[1]} adalah…`,a:p[0],opts:strOpts(p[0],DAYS.map(d=>d[0]).filter(v=>v!==p[0])),say:`The day before ${x[0]} is ${p[0]}`,mean:`${p[0]} = ${p[1]}`}}),
+ jobs:V('Pekerjaan','🧑‍⚕️',3,[['doctor','dokter','🧑‍⚕️'],['teacher','guru','🧑‍🏫'],['farmer','petani','🧑‍🌾'],['police officer','polisi','👮'],['firefighter','pemadam kebakaran','🧑‍🚒'],['chef','koki','🧑‍🍳'],['pilot','pilot','🧑‍✈️'],['student','pelajar','🧑‍🎓'],['singer','penyanyi','🧑‍🎤'],['astronaut','astronaut','🧑‍🚀'],['mechanic','montir','🧑‍🔧'],['scientist','ilmuwan','🧑‍🔬'],['artist','seniman','🧑‍🎨'],['judge','hakim','🧑‍⚖️'],['office worker','pegawai kantor','🧑‍💼'],['programmer','pemrogram','🧑‍💻'],['builder','tukang bangunan','👷'],['detective','detektif','🕵️'],['guard','penjaga','💂'],['factory worker','pekerja pabrik','🧑‍🏭']]),
+ places:V('Tempat','🏫',3,[['hospital','rumah sakit','🏥'],['school','sekolah','🏫'],['mosque','masjid','🕌'],['church','gereja','⛪'],['temple','pura / kuil','🛕'],['bank','bank','🏦'],['post office','kantor pos','🏤'],['house','rumah','🏠'],['shop','toko','🏪'],['beach','pantai','🏖️'],['stadium','stadion','🏟️'],['train station','stasiun kereta','🚉'],['hotel','hotel','🏨'],['castle','istana','🏰'],['factory','pabrik','🏭'],['tent','tenda','⛺'],['mountain','gunung','⛰️'],['island','pulau','🏝️'],['desert','gurun','🏜️'],['city','kota','🏙️'],['bridge','jembatan','🌉'],['office','kantor','🏢'],['museum','museum','🏛️'],['airport','bandara','🛫']]),
+ time:T('Telling time','⏰',3,"What time is it? half past seven",()=>{const h=rnd(1,12),m=pick([0,15,30,45]);
+   const ph=(hh,mm)=>{hh=((hh-1+12)%12)+1;const nx=NUMW[(hh%12)+1];return mm===0?`${NUMW[hh]} o'clock`:mm===15?`quarter past ${NUMW[hh]}`:mm===30?`half past ${NUMW[hh]}`:`quarter to ${nx}`};
+   const ans=ph(h,m);return{q:'What time is it?',html:clockSVG(h,m),a:ans,opts:strOpts(ans,[ph(h,(m+30)%60),ph(h,(m+15)%60),ph(h+1,m),ph(h-1,m),ph(h,(m+45)%60)].filter(v=>v!==ans)),say:`It is ${ans}`,mean:`Pukul ${h}.${String(m).padStart(2,'0')}`}}),
+ months:T('Nama bulan','🗓️',3,'January, February, …',()=>{const i=rnd(0,11),x=MONTHS[i];
+   if(Math.random()<.5)return{q:`"${x[1]}" dalam bahasa Inggris adalah…`,a:x[0],opts:strOpts(x[0],shuffle(MONTHS.map(d=>d[0]).filter(v=>v!==x[0]))),say:x[0],mean:`${x[0]} = ${x[1]}`};
+   const n=MONTHS[(i+1)%12];return{q:`The month after ${x[0]} is…`,a:n[0],opts:strOpts(n[0],MONTHS.map(d=>d[0]).filter(v=>v!==n[0])),say:`The month after ${x[0]} is ${n[0]}`,mean:`${n[0]} = ${n[1]}`}}),
+ opposites:T('Lawan kata','↔️',3,'big – small, hot – cold',()=>{const x=pick(OPP),flip=Math.random()<.5,w=flip?x[1]:x[0],ans=flip?x[0]:x[1];
+   return{q:`The opposite of "${w}" is…`,hint:`Lawan kata dari "${w}"`,a:ans,opts:strOpts(ans,OPP.flat().filter(v=>v!==ans&&v!==w)),say:`The opposite of ${w} is ${ans}`}}),
+ grammar:T('Melengkapi kalimat','✏️',3,'I ___ to school every day.',()=>{const x=pick(GRAM);
+   return{q:x[0],a:x[1],opts:shuffle([x[1],...x[2]]),say:x[0].replace('___',x[1]),mean:x[3],review:x[0].replace('___',x[1])}}),
+ past:T('Past tense','⏪',0,'go → went, eat → ate',()=>{const P=[['go','went','pergi'],['eat','ate','makan'],['see','saw','melihat'],['play','played','bermain'],['swim','swam','berenang'],['buy','bought','membeli'],['have','had','punya'],['run','ran','berlari'],['write','wrote','menulis'],['drink','drank','minum'],['make','made','membuat'],['come','came','datang'],['visit','visited','mengunjungi'],['watch','watched','menonton'],['read','read','membaca'],['sing','sang','bernyanyi'],['sleep','slept','tidur'],['take','took','mengambil'],['give','gave','memberi'],['find','found','menemukan'],['fly','flew','terbang'],['ride','rode','mengendarai'],['sit','sat','duduk'],['get','got','mendapat'],['cook','cooked','memasak'],['clean','cleaned','membersihkan'],['jump','jumped','melompat'],['cry','cried','menangis'],['study','studied','belajar']];
+   const x=pick(P);return{q:`Bentuk lampau (past tense) dari "${x[0]}" adalah…`,hint:'Dipakai untuk kejadian kemarin (yesterday)',a:x[1],opts:strOpts(x[1],[x[0]+'ed',x[0]+'ing',x[0]+'s',pick(P.filter(y=>y!==x))[1],pick(P.filter(y=>y!==x))[1]].filter(v=>v!==x[1])),say:`${x[0]}, ${x[1]}`,mean:`${x[0]} → ${x[1]} (${x[2]})`}}),
+ compare:T('Comparative & superlative','📏',0,'big → bigger → biggest',()=>{const C=[['big','bigger','biggest','besar'],['small','smaller','smallest','kecil'],['tall','taller','tallest','tinggi'],['fast','faster','fastest','cepat'],['happy','happier','happiest','senang'],['hot','hotter','hottest','panas'],['good','better','best','baik'],['bad','worse','worst','buruk'],['beautiful','more beautiful','most beautiful','indah'],['heavy','heavier','heaviest','berat'],['long','longer','longest','panjang'],['old','older','oldest','tua'],['cold','colder','coldest','dingin'],['busy','busier','busiest','sibuk'],['thin','thinner','thinnest','kurus'],['far','farther','farthest','jauh'],['expensive','more expensive','most expensive','mahal'],['interesting','more interesting','most interesting','menarik'],['strong','stronger','strongest','kuat'],['easy','easier','easiest','mudah']];
+   const x=pick(C),sup=Math.random()<.5,ans=sup?x[2]:x[1];const cands=[x[1],x[2],x[0]+'er',x[0]+'est','more '+x[0],'most '+x[0]].filter(v=>v!==ans);
+   return{q:sup?`Bentuk "paling …" (superlative) dari "${x[0]}" adalah…`:`Bentuk "lebih …" (comparative) dari "${x[0]}" adalah…`,hint:`${x[0]} = ${x[3]}`,a:ans,opts:strOpts(ans,cands),say:`${x[0]}, ${x[1]}, ${x[2]}`,mean:`${x[0]} → ${x[1]} → ${x[2]}`}}),
+};
+/* level Bahasa Inggris untuk jalur Cambridge (Cambridge English: Starters, Movers, Flyers) */
+const CAM={colors:1,numbers:1,animals:1,fruits:1,body:1,greet:1,family:1,school:1,food:2,actions:2,numbers2:2,days:2,jobs:2,places:2,opposites:2,time:3,months:3,grammar:3,past:3,compare:3};
+const MODES=[{id:'mix',t:'🔀 Campur'},{id:'see',t:'Lihat → pilih kata'},{id:'word',t:'Kata → pilih gambar'},{id:'arti',t:'Kata → pilih arti'},{id:'idn',t:'Arti → pilih kata'},{id:'eja',t:'Pilih ejaan yang benar'}];
+if(canSpeak) MODES.push({id:'hear',t:'Dengar → pilih gambar'});
+let engMode=S.engMode&&MODES.some(m=>m.id===S.engMode)?S.engMode:'mix';
+/* buat 3 ejaan salah yang mirip, untuk mode "Pilih ejaan yang benar" */
+function misspell(w){
+  const c=w.split(''),VW='aeiou',t=rnd(0,3),i=rnd(0,c.length-1);
+  if(t===0&&c.length>3){if(i>=c.length-1||c[i]===' '||c[i+1]===' '||c[i]===c[i+1])return null;[c[i],c[i+1]]=[c[i+1],c[i]]}
+  else if(t===1&&c.length>3){if(c[i]===' '||c[i]==='-')return null;c.splice(i,1)}
+  else if(t===2){if(c[i]===' '||c[i]==='-')return null;c.splice(i,0,c[i])}
+  else{const vs=c.map((ch,j)=>VW.includes(ch)?j:-1).filter(j=>j>=0);if(!vs.length)return null;const j=pick(vs);c[j]=pick(VW.replace(c[j],'').split(''))}
+  return c.join('');
+}
+function spellOpts(w){const s=new Set([w]);let g=0;while(s.size<4&&g++<200){const m=misspell(w);if(m&&m.trim()===m&&!m.includes('  '))s.add(m)}return shuffle([...s])}
+let engLv=level(S.grade);
+const LVM={1:'Kelas 1–2',2:'Kelas 3–4',3:'Kelas 5–6'},LVC={1:'Starters (Stage 1–2)',2:'Movers (Stage 3–4)',3:'Flyers (Stage 5–6)'};
+const LV=new Proxy({},{get:(t,k)=>(S.cur==='cam'?LVC:LVM)[k]});
+function visual(cat,item,big){
+  if(cat==='colors') return big?`<div class="swatch" style="background:${item[2]}"></div>`:`<span style="display:inline-block;width:44px;height:44px;border-radius:12px;background:${item[2]};border:2px solid var(--border);vertical-align:middle"></span>`;
+  if(cat.startsWith('numbers')) return big?`<div class="qtext">${item[2]}</div>`:item[2];
+  return big?`<div class="pic">${item[2]}</div>`:item[2];
+}
+function genVocab(cat){
+  const pool=ENG[cat].w,item=pick(pool);
+  return{cat,item,all:shuffle([item,...shuffle(pool.filter(x=>x!==item)).slice(0,3)])};
+}
+
+/* ---------- views ---------- */
+const views=['vHome','vMath','vEng','vQuiz','vResult'];
+let lastMenu='home';
+function show(v){views.forEach(x=>$(x).hidden=x!==v);window.scrollTo(0,0)}
+function totalStars(){return Object.values(S.best).reduce((s,v)=>s+v,0)}
+function starsRow(n){return [0,1,2].map(i=>STAR.replace('<svg','<svg class="'+(i<n?'on':'')+'"')).join('')}
+const hello=()=>S.name?`Halo, ${S.name}! Mau belajar apa hari ini?`:'Halo! Mau belajar apa hari ini?';
+
+function renderHome(){
+  $('totalStars').textContent=totalStars();
+  $('nameIn').value=S.name;$('helloText').textContent=hello();
+  $('gradeChips').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="chip" aria-pressed="${g===S.grade}" data-g="${g}">${g}</button>`).join('');
+  $('faseNote').textContent=S.cur==='cam'?`Kelas ${S.grade} setara Cambridge Stage ${S.grade}.`:`Kelas ${S.grade} termasuk Fase ${fase(S.grade)} Kurikulum Merdeka.`;
+  $('curChips').innerHTML=[['merdeka','Kurikulum Merdeka'],['cam','Cambridge']].map(([v,l])=>`<button class="chip sm" aria-pressed="${S.cur===v}" data-cur="${v}">${l}</button>`).join('');
+  if(CFG){
+    $('gradeChips').parentElement.hidden=true; // kelas diatur orang tua
+    $('parentLink').hidden=false;
+    const done=Math.min(CFG.done,CFG.sets);
+    $('mission').hidden=false;
+    $('mission').innerHTML=`<b>Misi buka tablet</b><span>Kerjakan Misi campuran ${CFG.sets>1?CFG.sets+' kali ':''}dengan minimal ${CFG.minCorrect} jawaban benar dari 10 soal. Hadiahnya ${CFG.minutes} menit bebas main tablet!</span>
+      <span class="dots">${Array.from({length:CFG.sets},(_,i)=>`<i class="${i<done?'on':''}"></i>`).join('')}</span>
+      ${CFG.done>=CFG.sets?'<button class="next unlock" id="unlockHome">Buka tablet 🎉</button>':''}`;
+    const uh=$('unlockHome');if(uh)uh.onclick=()=>NATIVE.unlock();
+  }
+  $('mathDesc').textContent=S.cur==='cam'?`${mathSet().length} latihan Stage ${S.grade}`:`${mathSet().length} latihan kelas ${S.grade}`;
+  $('engDesc').textContent=`Level ${LV[level(S.grade)]}`;
+  const sum=p=>Object.keys(S.best).filter(k=>k.startsWith(p)).reduce((s,k)=>s+S.best[k],0);
+  const mk=sum('m:'),ek=sum('e:');
+  const xb=S.best['x:mix']||0;$('mixBest').textContent=xb?`Bintang terbaik: ${xb}`:'';
+  $('mathBest').textContent=mk?`${mk} bintang terkumpul`:'';
+  $('engBest').textContent=ek?`${ek} bintang terkumpul`:'';
+}
+$('nameIn').addEventListener('input',e=>{S.name=e.target.value.trim();save();$('helloText').textContent=hello()});
+$('gradeChips').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b)return;S.grade=+b.dataset.g;engLv=level(S.grade);save();renderHome()});
+$('curChips').addEventListener('click',e=>{const b=e.target.closest('[data-cur]');if(!b)return;S.cur=b.dataset.cur;engLv=level(S.grade);save();renderHome()});
+
+function renderMath(){
+  $('mathSub').textContent=S.cur==='cam'?`Cambridge Stage ${S.grade} (setara kelas ${S.grade}). Setiap latihan berisi 10 soal.`:`Kelas ${S.grade} · Kurikulum Merdeka Fase ${fase(S.grade)}. Setiap latihan berisi 10 soal.`;
+  $('mathList').innerHTML=mathSet().map(m=>`<button class="opt-row" data-m="${m.id}"><span class="ic sym" style="color:var(--math)">${m.ic}</span><span><b>${m.t}</b><small>${m.d}</small></span><span class="mini">${starsRow(S.best['m:'+m.id]||0)}</span></button>`).join('');
+}
+const ekey=(id,mode)=>ENG[id].type==='v'?`e:${id}:${mode}`:`e:${id}`;
+function renderEng(){
+  const rec=level(S.grade);
+  $('engSub').textContent=`Disarankan untuk kelas ${S.grade}: level ${LV[rec]}.`;
+  if(CFG)engLv=rec; // di tablet, level mengikuti kelas dari orang tua
+  $('engLevel').innerHTML=(CFG?[rec]:[1,2,3]).map(l=>`<button class="chip sm" aria-pressed="${l===engLv}" data-lv="${l}">${LV[l]}</button>`).join('');
+  const cats=Object.entries(ENG).filter(([k,c])=>(S.cur==='cam'?CAM[k]:c.lv)===engLv);
+  $('modeField').hidden=!cats.some(([,c])=>c.type==='v');
+  $('engMode').innerHTML=MODES.map(m=>`<button class="chip sm" aria-pressed="${m.id===engMode}" data-mode="${m.id}">${m.t}</button>`).join('');
+  $('engList').innerHTML=cats.map(([k,c])=>`<button class="opt-row" data-e="${k}"><span class="ic">${c.ic}</span><span><b>${c.t}${c.type==='t'?'<span class="tag">Pilihan ganda</span>':''}</b><small>${c.type==='v'?c.w.slice(0,3).map(w=>w[0]).join(', ')+', …':esc(c.ex)}</small></span><span class="mini">${starsRow(S.best[ekey(k,engMode)]||0)}</span></button>`).join('');
+}
+$('goMath').onclick=()=>{lastMenu='math';renderMath();show('vMath')};
+$('goEng').onclick=()=>{lastMenu='eng';renderEng();show('vEng')};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;
+  const to=b.dataset.go==='back'?lastMenu:b.dataset.go;
+  if(to==='home'){renderHome();show('vHome')}else if(to==='math'){renderMath();show('vMath')}else{renderEng();show('vEng')}});
+$('engLevel').addEventListener('click',e=>{const b=e.target.closest('[data-lv]');if(!b)return;engLv=+b.dataset.lv;renderEng()});
+$('engMode').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;engMode=b.dataset.mode;S.engMode=engMode;save();renderEng()});
+$('mathList').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)start({type:'m',id:b.dataset.m})});
+$('engList').addEventListener('click',e=>{const b=e.target.closest('[data-e]');if(!b)return;const id=b.dataset.e;start({type:ENG[id].type==='v'?'v':'t',id,mode:engMode})});
+
+/* ---------- ingatan soal: soal yang sudah keluar tidak diulang selama 3 hari ---------- */
+const RKEY='pintar-sd-recent',RECENT_MS=3*864e5;
+let R={};try{R=JSON.parse(localStorage.getItem(RKEY)||'{}')||{}}catch(e){R={}}
+const isRecent=k=>R[k]&&Date.now()-R[k]<RECENT_MS;
+function markSeen(keys){
+  const now=Date.now();keys.forEach(k=>R[k]=now);
+  let ks=Object.keys(R).filter(k=>now-R[k]<RECENT_MS);
+  if(ks.length>4000)ks=ks.sort((a,b)=>R[b]-R[a]).slice(0,4000);
+  const nr={};ks.forEach(k=>nr[k]=R[k]);R=nr;
+  try{localStorage.setItem(RKEY,JSON.stringify(R))}catch(e){}
+}
+/* buat satu soal; utamakan yang belum pernah keluar, kalau habis ambil yang paling lama */
+function fresh(make,used){
+  let best=null,bestT=Infinity;
+  for(let i=0;i<40;i++){
+    const q=make();if(used.has(q.key))continue;
+    if(!isRecent(q.key))return q;
+    if(R[q.key]<bestT){best=q;bestT=R[q.key]}
+  }
+  return best||make();
+}
+function makeQ(kind,id,mode){
+  if(kind==='m'){const q=genMath(id);q.kind='m';q.topic=id;q.key='m|'+q.q+'|'+q.a;return q}
+  if(kind==='t'){const q=ENG[id].gen();q.kind='t';q.cat=id;q.key='t|'+id+'|'+q.q+'|'+q.a;return q}
+  const q=genVocab(id);q.kind='v';
+  let md=mode||'mix';if(md==='mix')md=pick(MODES.filter(x=>x.id!=='mix')).id;
+  q.mode=md;if(md==='eja')q.spell=spellOpts(q.item[0]);
+  q.key='v|'+id+'|'+q.item[0];return q;
+}
+const engCats=()=>Object.entries(ENG).filter(([k,c])=>(S.cur==='cam'?CAM[k]:c.lv)===level(S.grade)).map(([k])=>k);
+
+/* ---------- quiz engine ---------- */
+const N=10;let Q=null;
+function start(cfg){
+  const used=new Set(),qs=[];
+  let slots=[];
+  if(cfg.type==='mix'){
+    // 6 Matematika + 4 Bahasa Inggris, topik diputar supaya bervariasi
+    const mt=shuffle(mathSet().map(m=>m.id)),et=shuffle(engCats());
+    for(let i=0;i<6;i++)slots.push(['m',mt[i%mt.length]]);
+    for(let i=0;i<4;i++){const c=et[i%et.length];slots.push([ENG[c].type==='v'?'v':'t',c])}
+    slots=shuffle(slots);
+  }else{
+    for(let i=0;i<N;i++)slots.push([cfg.type,cfg.id,cfg.mode]);
+  }
+  slots.forEach(([k,id,mode])=>{const q=fresh(()=>makeQ(k,id,mode),used);used.add(q.key);qs.push(q)});
+  markSeen(qs.map(q=>q.key));
+  Q={cfg,qs,i:0,right:0,miss:[]};
+  show('vQuiz');renderQ();
+}
+const blankify=s=>esc(s).replace('___','<span class="blank"></span>');
+function renderQ(){
+  const {qs,i}=Q,q=qs[i];
+  document.documentElement.style.setProperty('--accent',q.kind==='m'?'var(--math)':'var(--eng)');
+  $('qCount').textContent=`${i+1}/${N}`;$('barFill').style.width=(i/N*100)+'%';
+  $('feedback').textContent='';$('feedback').className='feedback';$('nextBtn').hidden=true;
+  let body='',btns='';
+  const tag=Q.cfg.type==='mix'?`<div class="qtag">${q.kind==='m'?'Matematika':'Bahasa Inggris'}</div>`:'';
+  if(q.kind==='v'){
+    const {cat,item,all,mode}=q;
+    if(mode==='see'){body=visual(cat,item,true)+`<div class="qhint">Apa bahasa Inggrisnya?</div>`;
+      btns=all.map(o=>`<button class="ans txt" data-v="${esc(o[0])}">${esc(o[0])}</button>`).join('')}
+    else if(mode==='eja'){body=visual(cat,item,true)+`<div class="qhint">Pilih tulisan bahasa Inggris yang benar</div>`;
+      btns=q.spell.map(o=>`<button class="ans txt" data-v="${esc(o)}">${esc(o)}</button>`).join('')}
+    else if(mode==='arti'){body=`<div class="qtext">${esc(item[0])}</div><div class="qhint">Apa artinya dalam bahasa Indonesia?</div><button class="speak" data-say="${esc(item[0])}">🔊 Dengarkan</button>`;
+      btns=all.map(o=>`<button class="ans txt" data-v="${esc(o[0])}">${esc(o[1])}</button>`).join('')}
+    else if(mode==='idn'){body=`<div class="qtext small">${esc(item[1])}</div><div class="qhint">Apa bahasa Inggrisnya?</div>`;
+      btns=all.map(o=>`<button class="ans txt" data-v="${esc(o[0])}">${esc(o[0])}</button>`).join('')}
+    else{
+      body=mode==='word'?`<div class="qtext">${esc(item[0])}</div><div class="qhint">Pilih gambar yang tepat</div><button class="speak" data-say="${esc(item[0])}">🔊 Dengarkan</button>`
+        :`<div class="pic" aria-hidden="true">🎧</div><div class="qhint">Dengarkan, lalu pilih gambarnya</div><button class="speak" data-say="${esc(item[0])}">🔊 Putar lagi</button>`;
+      btns=all.map(o=>`<button class="ans ${cat==='colors'||cat.startsWith('numbers')?'':'emoji'}" data-v="${esc(o[0])}" aria-label="${mode==='hear'?'pilihan':esc(o[0])}">${visual(cat,o,false)}</button>`).join('');
+      if(mode==='hear') setTimeout(()=>say(item[0]),250);
+    }
+  }else{
+    body=(q.html||'')+`<div class="qtext ${q.small||q.kind==='t'?'small':''}">${blankify(q.q)}</div>${q.hint?`<div class="qhint">${esc(q.hint)}</div>`:''}`;
+    const long=q.opts.some(o=>String(o).length>7);
+    btns=q.opts.map(o=>`<button class="ans ${long||q.kind==='t'?'txt':''}" data-v="${esc(o)}">${esc(o)}</button>`).join('');
+  }
+  $('qBody').innerHTML=tag+body;$('answers').innerHTML=btns;
+}
+$('qBody').addEventListener('click',e=>{const b=e.target.closest('[data-say]');if(b)say(b.dataset.say)});
+$('answers').addEventListener('click',e=>{
+  const b=e.target.closest('.ans');if(!b||b.disabled)return;
+  const q=Q.qs[Q.i];const correct=q.kind==='v'?q.item[0]:String(q.a);
+  const ok=b.dataset.v===correct;
+  [...$('answers').children].forEach(x=>{x.disabled=true;if(x.dataset.v===correct)x.classList.add('right')});
+  if(!ok)b.classList.add('wrong');
+  beep(ok);
+  const fb=$('feedback');let msg;
+  if(q.kind==='m'){
+    msg=ok?pick(['Benar! Hebat!','Tepat sekali!','Pintar!','Mantap!']):`Belum tepat. Jawabannya ${q.a}.`+(q.explain?' '+q.explain:'');
+    if(!ok)Q.miss.push(q.review?q.review:q.q.includes('= ?')?q.q.replace('= ?','= '+q.a):`${q.q} → ${q.a}`);
+  }else if(q.kind==='v'){
+    msg=(ok?pick(['Correct! ','Great job! ','Well done! ']):'Belum tepat. ')+`${q.item[0]} = ${q.item[1]}`;
+    if(q.mode!=='hear'||!ok)say(q.item[0]);
+    if(!ok)Q.miss.push(`${q.item[0]} = ${q.item[1]}`);
+  }else{
+    msg=(ok?pick(['Correct! ','Great job! ','Well done! ']):`Jawabannya: ${q.a}. `)+(q.mean||'');
+    say(q.say||q.a);
+    if(!ok)Q.miss.push(q.review||`${q.q} → ${q.a}`);
+  }
+  fb.textContent=msg;fb.className='feedback '+(ok?'ok':'no');
+  if(ok)Q.right++;
+  $('nextBtn').hidden=false;$('nextBtn').textContent=Q.i===N-1?'Lihat hasil →':'Lanjut →';$('nextBtn').focus({preventScroll:true});
+});
+$('nextBtn').onclick=()=>{Q.i++;if(Q.i<N)renderQ();else finish()};
+$('quitQuiz').onclick=()=>{try{speechSynthesis.cancel()}catch(e){};
+  if(lastMenu==='math'){renderMath();show('vMath')}else if(lastMenu==='eng'){renderEng();show('vEng')}else{renderHome();show('vHome')}};
+$('againBtn').onclick=()=>start(Q.cfg);
+$('unlockBtn').onclick=()=>{try{NATIVE.unlock()}catch(e){}};
+$('parentLink').onclick=()=>{try{NATIVE.openParent()}catch(e){}};
+$('goMix').onclick=()=>{lastMenu='home';start({type:'mix'})};
+
+function finish(){
+  $('barFill').style.width='100%';
+  const r=Q.right,stars=r>=9?3:r>=7?2:r>=5?1:0,isMix=Q.cfg.type==='mix';
+  const key=isMix?'x:mix':Q.cfg.type==='m'?'m:'+Q.cfg.id:ekey(Q.cfg.id,Q.cfg.mode);
+  const prev=S.best[key]||0;if(stars>prev){S.best[key]=stars;save()}
+  $('totalStars').textContent=totalStars();
+  const nm=S.name?`, ${S.name}`:'';
+  $('resTitle').textContent=[`Ayo coba lagi${nm}!`,`Lumayan${nm}!`,`Bagus${nm}!`,`Hebat sekali${nm}!`][stars];
+  $('resStars').innerHTML=starsRow(stars);
+  $('resScore').textContent=`${r}/${N}`;
+  $('resMsg').textContent=stars>prev&&prev>0?'Rekor baru! Bintangmu bertambah.':stars===3?'Sempurna. Coba latihan lain!':'Benar 9 soal untuk dapat 3 bintang.';
+  if(stars>=2&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const box=document.createElement('div');box.className='confetti';const cols=['#ff5c8a','#ffb800','#22c55e','#3b82f6','#a855f7','#ff7a1a'];
+    for(let k=0;k<70;k++){const p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=pick(cols);
+      p.style.animationDuration=(1.6+Math.random()*1.6)+'s';p.style.animationDelay=Math.random()*.6+'s';box.appendChild(p)}
+    document.body.appendChild(box);setTimeout(()=>box.remove(),4000);
+  }
+  $('resReview').innerHTML=Q.miss.length?'<span class="lbl">Yang perlu diulang</span>'+Q.miss.map(m=>`<div><span class="x">✕</span> ${esc(m)}</div>`).join(''):'';
+  $('missionMsg').hidden=true;$('unlockBtn').hidden=true;
+  if(NATIVE&&CFG){
+    const cur=S.cur==='cam'?'Cambridge':'Merdeka';
+    const title=isMix?`Misi campuran (${cur})`:Q.cfg.type==='m'?(mathSet().find(m=>m.id===Q.cfg.id)||{t:'Matematika'}).t:'B. Inggris: '+ENG[Q.cfg.id].t;
+    const msg=$('missionMsg');msg.hidden=false;
+    if(isMix){
+      try{NATIVE.reportSet(title,r,N)}catch(e){}
+      loadCfg();
+      if(r<CFG.minCorrect) msg.textContent=`Untuk misi, butuh minimal ${CFG.minCorrect} benar. Ayo coba sekali lagi!`;
+      else if(CFG.done<CFG.sets) msg.textContent=`Misi ${CFG.done}/${CFG.sets} selesai. Kerjakan ${CFG.sets-CFG.done} misi campuran lagi!`;
+      else{msg.textContent=`Misi selesai! Tablet bisa dipakai ${CFG.minutes} menit.`;$('unlockBtn').hidden=false}
+    }else{
+      try{if(NATIVE.logSet)NATIVE.logSet(title,r,N)}catch(e){}
+      msg.textContent='Latihan ini untuk berlatih saja. Untuk membuka tablet, kerjakan Misi campuran di halaman awal.';
+    }
+  }
+  show('vResult');
+}
+
+renderHome();
+})();
+</script>
+
+</body>
+</html>

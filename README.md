@@ -29,8 +29,13 @@ Kode ini belum dikompilasi. Pilih salah satu cara:
 1. Buat repository baru (boleh private) di github.com.
 2. Upload **seluruh isi folder ini**, termasuk folder `.github`.
    Jika folder `.github` tidak ikut terupload, buat manual lewat *Add file → Create new file*, beri nama `.github/workflows/build.yml`, lalu salin isinya dari file di folder ini.
-3. Buka tab **Actions** → workflow **Build APK** berjalan otomatis (sekitar 3–5 menit). Bisa juga dijalankan manual lewat *Run workflow*.
-4. Setelah centang hijau, buka run tersebut → bagian **Artifacts** → unduh **PintarSD-apk** (zip berisi `app-debug.apk`).
+3. **Sekali saja:** isi kunci tanda tangan di *Settings → Secrets and variables → Actions → New repository secret*:
+   - `SIGNING_KEYSTORE_B64` → isi file `SIGNING_KEYSTORE_B64.txt`
+   - `SIGNING_PASSWORD` → isi file `SIGNING_PASSWORD.txt`
+
+   Kedua file ini disimpan di komputer orang tua, **jangan** diunggah ke repository. Dengan kunci yang sama, APK versi baru bisa dipasang menimpa versi lama tanpa menghapus PIN, pengaturan, dan riwayat.
+4. Buka tab **Actions** → workflow **Build APK** berjalan otomatis (sekitar 3–5 menit). Bisa juga dijalankan manual lewat *Run workflow*.
+5. Setelah centang hijau, buka run tersebut → bagian **Artifacts** → unduh **PintarSD-apk-N** (zip berisi `PintarSD-N.apk`, N = nomor build).
 
 ### Cara B – Android Studio
 
@@ -68,7 +73,8 @@ Semua status izin terlihat di bagian **Status** pada menu orang tua (✓ / ✗).
 ## Batasan versi ini (prototipe)
 
 - Ini **bukan** pengganti layar kunci sistem (PIN/pola Android tetap berjalan seperti biasa). Pintar SD muncul tepat setelah layar kunci sistem dibuka.
-- Anak yang paham pengaturan Android bisa mengganti layar utama lewat Setelan bila Setelan tidak diblokir.
+- Aplikasi Setelan disembunyikan dari daftar aplikasi anak, tetapi masih bisa dibuka lewat ikon gerigi di panel notifikasi. Anak yang paham pengaturan Android tetap bisa mengganti layar utama dari sana bila Setelan tidak diblokir.
+- Waktu bebas dihitung sejak tablet menyala, jadi mengubah jam/tanggal tablet tidak memperpanjangnya. Akibatnya, **setiap kali tablet dinyalakan ulang, tablet kembali terkunci** dan sisa waktu bebas hilang.
 - Panel notifikasi / quick settings tetap bisa ditarik.
 - Suara Bahasa Inggris memakai mesin Text-to-Speech tablet (Google TTS). Jika tidak bersuara, pasang/aktifkan "Speech Services by Google".
 - Font khusus dimuat dari internet; tanpa internet tampilan memakai font bawaan dan tetap berfungsi.
