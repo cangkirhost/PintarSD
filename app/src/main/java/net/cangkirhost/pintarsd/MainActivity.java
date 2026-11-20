@@ -12,6 +12,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.text.TextUtils;
@@ -57,6 +60,11 @@ public class MainActivity extends Activity {
     private final List<AppItem> apps = new ArrayList<>();
     private final Handler h = new Handler(Looper.getMainLooper());
     private TextToSpeech tts;
+    private static final String GOOGLE_TTS = "com.google.android.tts";
+    /** Status suara: init, ok, nolang (data bahasa Inggris belum ada), noengine (tidak ada mesin suara). */
+    static volatile String ttsState = "init";
+    private String pendingSay = null;
+    private long lastTtsInit = 0L;
     private boolean webLoaded = false;
     private boolean wasLocked = true;
     boolean leavingForParent = false;
@@ -84,9 +92,7 @@ public class MainActivity extends Activity {
         setContentView(root);
         buildWeb();
         buildApps();
-        tts = new TextToSpeech(this, status -> {
-            if (status == TextToSpeech.SUCCESS && tts != null) tts.setLanguage(Locale.US);
-        });
+        initTts(null);
         if (Store.pin(this).isEmpty()) openParent(); // pertama kali: orang tua atur PIN & izin
     }
 
@@ -298,6 +304,65 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    // ---------------- suara Bahasa Inggris (Text-to-Speech) ----------------
+    /** @param engine null = mesin suara bawaan tablet; kalau gagal dicoba Google TTS. */
+    private void initTts(String engine) {
+        lastTtsInit = SystemClock.elapsedRealtime();
+        ttsState = "init";
+        if (tts != null) {
+            try { tts.shutdown(); } catch (Exception ignored) { }
+            tts = null;
+        }
+        TextToSpeech.OnInitListener l = status -> {
+            if (status != TextToSpeech.SUCCESS || tts == null) {
+                if (engine == null && isInstalled(GOOGLE_TTS)) { initTts(GOOGLE_TTS); return; }
+                ttsState = "noengine";
+                return;
+            }
+            int r = TextToSpeech.LANG_NOT_SUPPORTED;
+            for (Locale loc : new Locale[]{Locale.US, Locale.UK, Locale.ENGLISH}) {
+                try { r = tts.setLanguage(loc); } catch (Exception e) { r = TextToSpeech.LANG_NOT_SUPPORTED; }
+                if (r >= TextToSpeech.LANG_AVAILABLE) break;
+            }
+            if (r < TextToSpeech.LANG_AVAILABLE && engine == null
+                    && !GOOGLE_TTS.equals(tts.getDefaultEngine()) && isInstalled(GOOGLE_TTS)) {
+                initTts(GOOGLE_TTS);
+                return;
+            }
+            ttsState = r < TextToSpeech.LANG_AVAILABLE ? "nolang" : "ok";
+            tts.setSpeechRate(0.85f);
+            tts.setAudioAttributes(new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build());
+            if (pendingSay != null) {
+                tts.speak(pendingSay, TextToSpeech.QUEUE_FLUSH, null, "pintar");
+                pendingSay = null;
+            }
+        };
+        tts = engine == null ? new TextToSpeech(this, l) : new TextToSpeech(this, l, engine);
+    }
+
+    private boolean isInstalled(String pkg) {
+        try {
+            getPackageManager().getPackageInfo(pkg, 0);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void sayNow(String text) {
+        if (TextUtils.isEmpty(text)) return;
+        String st = ttsState;
+        if ("ok".equals(st) && tts != null) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "pintar");
+            return;
+        }
+        pendingSay = text;
+        // Mesin suara gagal sebelumnya: coba lagi (mungkin orang tua baru memasang data suaranya).
+        if (!"init".equals(st) && SystemClock.elapsedRealtime() - lastTtsInit > 5_000L) initTts(null);
+    }
+
     private int dp(int v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
@@ -340,9 +405,20 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void speak(String text) {
-            if (tts != null && !TextUtils.isEmpty(text)) {
-                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "pintar");
-            }
+            runOnUiThread(() -> sayNow(text));
+        }
+
+        /** init / ok / nolang / noengine */
+        @JavascriptInterface
+        public String ttsStatus() {
+            return ttsState;
+        }
+
+        /** Volume media tablet (0 = tanpa suara). */
+        @JavascriptInterface
+        public int volume() {
+            AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+            return am == null ? 1 : am.getStreamVolume(AudioManager.STREAM_MUSIC);
         }
 
         @JavascriptInterface

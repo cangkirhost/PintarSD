@@ -274,7 +274,12 @@ function beep(ok){try{AC=AC||new (window.AudioContext||window.webkitAudioContext
   g.gain.setValueAtTime(.0001,t+i*.12);g.gain.exponentialRampToValueAtTime(.18,t+i*.12+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.12+.2);
   o.connect(g).connect(AC.destination);o.start(t+i*.12);o.stop(t+i*.12+.22)})}catch(e){}}
 const canSpeak=!!NATIVE||'speechSynthesis' in window;
-function say(w){if(!canSpeak||!w)return;if(NATIVE){try{NATIVE.speak(w)}catch(e){}return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+let hintT;function sndHint(m){let d=document.getElementById('sndHint');if(!d){d=document.createElement('div');d.id='sndHint';d.setAttribute('role','status');d.style.cssText='position:fixed;left:12px;right:12px;bottom:16px;z-index:99;background:#2B2350;color:#fff;border-radius:14px;padding:12px 14px;font-weight:700;text-align:center;font-size:15px;line-height:1.35';document.body.appendChild(d)}d.textContent=m;d.style.display='block';clearTimeout(hintT);hintT=setTimeout(()=>{d.style.display='none'},4500)}
+function say(w){if(!canSpeak||!w)return;if(NATIVE){try{NATIVE.speak(w);
+  const vol=NATIVE.volume?NATIVE.volume():1,st=NATIVE.ttsStatus?NATIVE.ttsStatus():'ok';
+  if(vol===0)sndHint('🔇 Volume tablet masih 0. Tekan tombol volume atas di samping tablet.');
+  else if(st==='nolang'||st==='noengine')sndHint('🔇 Suara bahasa Inggris belum terpasang di tablet. Minta ayah/ibu membuka menu orang tua.');
+}catch(e){}return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
 
 /* ---------- clock ---------- */
 function clockSVG(h,m){

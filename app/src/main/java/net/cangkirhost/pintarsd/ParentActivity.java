@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.media.AudioManager;
+import android.speech.tts.TextToSpeech;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.TypedValue;
@@ -106,6 +108,10 @@ public class ParentActivity extends Activity {
             button("3. Izinkan alarm tepat waktu", "#FF7A1A", v -> openSystem(
                     new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + getPackageName()))));
         }
+        button("Tes suara Bahasa Inggris", "#3B82F6", v -> testVoice());
+        button("Pengaturan suara (Text-to-Speech)", "#FF7A1A", v -> openSystem(new Intent("com.android.settings.TTS_SETTINGS")));
+        button("Pasang Speech Services by Google", "#FF7A1A", v -> openSystem(
+                new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.tts"))));
 
         section("Misi sebelum tablet terbuka");
         fGrade = numField("Kelas anak (1–6)", Store.grade(this));
@@ -168,7 +174,48 @@ public class ParentActivity extends Activity {
                 (home ? "✓" : "✗") + "  Layar utama: " + (home ? "Pintar SD" : "belum, tekan tombol 1") + "\n"
                 + (overlay ? "✓" : "✗") + "  Tampil di atas aplikasi lain" + (overlay ? "" : ": belum, tekan tombol 2") + "\n"
                 + (exact ? "✓" : "✗") + "  Alarm tepat waktu" + (exact ? "" : ": belum, tekan tombol 3") + "\n"
+                + voiceLine() + "\n"
                 + "•  Status tablet: " + state);
+    }
+
+    private String voiceLine() {
+        switch (MainActivity.ttsState) {
+            case "ok": return "✓  Suara Bahasa Inggris";
+            case "nolang": return "✗  Suara Bahasa Inggris: data bahasa Inggris belum diunduh (buka Pengaturan suara)";
+            case "noengine": return "✗  Suara Bahasa Inggris: mesin suara tidak ada (pasang Speech Services by Google)";
+            default: return "•  Suara Bahasa Inggris: sedang diperiksa";
+        }
+    }
+
+    private TextToSpeech testTts;
+
+    /** Tes suara terpisah, supaya orang tua bisa langsung mendengar hasilnya. */
+    private void testVoice() {
+        AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+        if (am != null && am.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
+            toast("Volume media masih 0. Naikkan volume dulu.");
+        }
+        if (testTts != null) testTts.shutdown();
+        testTts = new TextToSpeech(this, status -> {
+            if (status != TextToSpeech.SUCCESS || testTts == null) {
+                toast("Mesin suara tidak tersedia. Pasang Speech Services by Google.");
+                return;
+            }
+            int r = testTts.setLanguage(Locale.US);
+            if (r < TextToSpeech.LANG_AVAILABLE) r = testTts.setLanguage(Locale.UK);
+            if (r < TextToSpeech.LANG_AVAILABLE) {
+                toast("Data suara Bahasa Inggris belum ada. Buka Pengaturan suara lalu unduh bahasa Inggris.");
+                return;
+            }
+            testTts.speak("Hello! Let's learn English.", TextToSpeech.QUEUE_FLUSH, null, "tes");
+            toast("Memutar suara tes…");
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (testTts != null) testTts.shutdown();
+        super.onDestroy();
     }
 
     private boolean isDefaultHome() {
